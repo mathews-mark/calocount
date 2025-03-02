@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "HelloWorld",
-    "slug": "expo-template-default",
+    "name": "calocount",
+    "slug": "calocount",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,13 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mmarco51org.calocount"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.mmarco51org.calocount"
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +38,18 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1b9748ac-918a-4bb1-8912-36304488d63e"
+      }
+    },
+    "owner": "mmarco51-org",
+    "updates": {
+      "url": "https://u.expo.dev/1b9748ac-918a-4bb1-8912-36304488d63e"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
