@@ -1,9 +1,9 @@
-import { NextResponse, type NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 import type { CalorieEntry } from "@/types/calorie-entry"
 import { updateEntryInSheet, deleteEntryFromSheet } from "@/lib/google-sheets"
 
 // Update an entry
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id
     const updatedEntry: CalorieEntry = await request.json()
@@ -22,7 +22,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // Delete an entry
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id
 
