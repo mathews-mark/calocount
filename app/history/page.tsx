@@ -154,21 +154,13 @@ export default function HistoryPage() {
     try {
       setIsAdjusting(date)
 
-      // Calculate the current total calories for the day
+      // Calculate the new calories to add
       const dailyTotal = getDailyTotals()[date]?.calories || 0
+      const targetDifference = targets.calorieTarget - dailyTotal
+      const newCalories = targetDifference + adjustment
 
-      // Calculate the target with adjustment
-      const adjustedTarget = targets.calorieTarget + adjustment
-
-      // Calculate how many additional calories are needed to reach the adjusted target
-      const additionalCaloriesNeeded = adjustedTarget - dailyTotal
-
-      if (additionalCaloriesNeeded <= 0) {
-        toast({
-          title: "Cannot adjust calories",
-          description: "The adjustment would result in zero or negative calories to add.",
-          variant: "destructive",
-        })
+      if (newCalories <= 0) {
+        console.error("Adjustment would result in negative or zero calories")
         setIsAdjusting(null)
         return
       }
@@ -182,27 +174,18 @@ export default function HistoryPage() {
         body: JSON.stringify({
           date,
           adjustment,
-          targetCalories: additionalCaloriesNeeded, // Just add the difference needed
+          targetCalories: newCalories,
         }),
       })
 
       const data = await response.json()
 
       if (data.success) {
-        toast({
-          title: "Calories adjusted",
-          description: `Added ${additionalCaloriesNeeded} calories to reach ${adjustedTarget} total for the day.`,
-        })
         // Refresh entries to show the new adjustment
         await fetchEntries(customStartDate, customEndDate)
       }
     } catch (error) {
       console.error("Error adjusting daily calories:", error)
-      toast({
-        title: "Error",
-        description: "Failed to adjust calories.",
-        variant: "destructive",
-      })
     } finally {
       setIsAdjusting(null)
     }
@@ -465,7 +448,7 @@ export default function HistoryPage() {
                             disabled={isAdjusting === daily.date}
                           >
                             {isAdjusting === daily.date ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                            Net: {targets.calorieTarget - 250}
+                            Target -250
                           </Button>
                           <Button
                             size="sm"
@@ -474,7 +457,7 @@ export default function HistoryPage() {
                             disabled={isAdjusting === daily.date}
                           >
                             {isAdjusting === daily.date ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                            Net: {targets.calorieTarget}
+                            Exact Target
                           </Button>
                           <Button
                             size="sm"
@@ -483,7 +466,7 @@ export default function HistoryPage() {
                             disabled={isAdjusting === daily.date}
                           >
                             {isAdjusting === daily.date ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                            Net: {targets.calorieTarget + 250}
+                            Target +250
                           </Button>
                           <Button
                             size="sm"
@@ -492,7 +475,7 @@ export default function HistoryPage() {
                             disabled={isAdjusting === daily.date}
                           >
                             {isAdjusting === daily.date ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                            Net: {targets.calorieTarget + 500}
+                            Target +500
                           </Button>
                           <Button
                             size="sm"
@@ -501,7 +484,7 @@ export default function HistoryPage() {
                             disabled={isAdjusting === daily.date}
                           >
                             {isAdjusting === daily.date ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                            Net: {targets.calorieTarget + 750}
+                            Target +750
                           </Button>
                           <Button
                             size="sm"
@@ -510,7 +493,7 @@ export default function HistoryPage() {
                             disabled={isAdjusting === daily.date}
                           >
                             {isAdjusting === daily.date ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                            Net: {targets.calorieTarget + 1000}
+                            Target +1000
                           </Button>
                         </div>
                       )}
