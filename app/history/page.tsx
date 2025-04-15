@@ -149,18 +149,15 @@ export default function HistoryPage() {
     setEntries(entries.filter((entry) => entry.id !== id))
   }
 
-  // Update the adjustDailyCalories function to properly calculate net calories
-  // and not use Supabase
-
-  // Replace the existing adjustDailyCalories function with this updated version:
+  // Function to adjust daily total calories
   const adjustDailyCalories = async (date: string, adjustment: number) => {
     try {
       setIsAdjusting(date)
 
-      // Calculate the current daily total calories
+      // Calculate the current total calories for the day
       const dailyTotal = getDailyTotals()[date]?.calories || 0
 
-      // Calculate the adjusted target (base target + adjustment)
+      // Calculate the target with adjustment
       const adjustedTarget = targets.calorieTarget + adjustment
 
       // Calculate how many additional calories are needed to reach the adjusted target
@@ -169,7 +166,7 @@ export default function HistoryPage() {
       if (additionalCaloriesNeeded <= 0) {
         toast({
           title: "Cannot adjust calories",
-          description: "The adjustment would result in zero or negative additional calories.",
+          description: "The adjustment would result in zero or negative calories to add.",
           variant: "destructive",
         })
         setIsAdjusting(null)
@@ -185,7 +182,7 @@ export default function HistoryPage() {
         body: JSON.stringify({
           date,
           adjustment,
-          targetCalories: additionalCaloriesNeeded, // Only add the difference needed
+          targetCalories: additionalCaloriesNeeded, // Just add the difference needed
         }),
       })
 
@@ -194,23 +191,16 @@ export default function HistoryPage() {
       if (data.success) {
         toast({
           title: "Calories adjusted",
-          description: `Added ${additionalCaloriesNeeded} calories to reach ${adjustedTarget} total calories for the day.`,
+          description: `Added ${additionalCaloriesNeeded} calories to reach ${adjustedTarget} total for the day.`,
         })
-
         // Refresh entries to show the new adjustment
         await fetchEntries(customStartDate, customEndDate)
-      } else {
-        toast({
-          title: "Adjustment failed",
-          description: data.error || "Failed to adjust calories",
-          variant: "destructive",
-        })
       }
     } catch (error) {
       console.error("Error adjusting daily calories:", error)
       toast({
-        title: "Adjustment failed",
-        description: "An error occurred while adjusting calories",
+        title: "Error",
+        description: "Failed to adjust calories.",
         variant: "destructive",
       })
     } finally {
