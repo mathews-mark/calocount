@@ -13,12 +13,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 })
     }
 
-    // Calculate macros based on standard ratios
-    // Protein: 25% of calories (4 calories per gram)
-    // Carbs: 45% of calories (4 calories per gram)
+    // Calculate macros based on adjusted ratios with reduced protein
+    // Protein: 15% of calories (4 calories per gram)
+    // Carbs: 55% of calories (4 calories per gram)
     // Fat: 30% of calories (9 calories per gram)
-    const protein = Math.round((caloriesNeeded * 0.25) / 4)
-    const carbs = Math.round((caloriesNeeded * 0.45) / 4)
+    const protein = Math.round((caloriesNeeded * 0.15) / 4)
+    const carbs = Math.round((caloriesNeeded * 0.55) / 4)
     const fat = Math.round((caloriesNeeded * 0.3) / 9)
 
     // Create a new entry to add the calories
@@ -42,7 +42,18 @@ export async function POST(request: Request) {
     const localEntries = getLocalEntries()
     saveLocalEntry([...localEntries, newEntry])
 
-    return NextResponse.json({ success: true, entry: newEntry })
+    return NextResponse.json({
+      success: true,
+      entry: newEntry,
+      debug: {
+        date,
+        adjustment,
+        currentTotal,
+        targetCalories,
+        caloriesNeeded,
+        macros: { protein, carbs, fat },
+      },
+    })
   } catch (error) {
     console.error("Error adjusting calories:", error)
     return NextResponse.json({ success: false, error: "Failed to adjust calories" }, { status: 500 })

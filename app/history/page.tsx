@@ -149,20 +149,64 @@ export default function HistoryPage() {
     setEntries(entries.filter((entry) => entry.id !== id))
   }
 
+  // Calculate daily totals
+  const getDailyTotals = () => {
+    const dailyTotals: Record<
+      string,
+      {
+        date: string
+        calories: number
+        protein: number
+        isBelowTarget: boolean
+      }
+    > = {}
+
+    // Group entries by date and sum calories and protein
+    entries.forEach((entry) => {
+      // Use the date string directly from the entry as the key
+      if (!dailyTotals[entry.date]) {
+        dailyTotals[entry.date] = {
+          date: entry.date,
+          calories: 0,
+          protein: 0,
+          isBelowTarget: false,
+        }
+      }
+      dailyTotals[entry.date].calories += entry.calories
+      dailyTotals[entry.date].protein += entry.protein
+    })
+
+    // Check which days are below target
+    Object.keys(dailyTotals).forEach((date) => {
+      dailyTotals[date].isBelowTarget = targets.calorieTarget - dailyTotals[date].calories >= 300
+    })
+
+    return dailyTotals
+  }
+
   // Function to adjust daily total calories
   const adjustDailyCalories = async (date: string, adjustment: number) => {
     try {
       setIsAdjusting(date)
 
-      // Calculate the new calories to add
-      const dailyTotal = getDailyTotals()[date]?.calories || 0
+      // Get all daily totals
+      const allDailyTotals = getDailyTotals()
+
+      // Get the current total for this specific date
+      const currentTotal = allDailyTotals[date]?.calories || 0
+      console.log(`Current total for ${date}: ${currentTotal}`)
+
+      // Calculate the adjusted target and calories needed
       const targetWithAdjustment = targets.calorieTarget + adjustment
-      const caloriesNeeded = targetWithAdjustment - dailyTotal
+      const caloriesNeeded = targetWithAdjustment - currentTotal
+
+      console.log(`Target with adjustment: ${targetWithAdjustment}`)
+      console.log(`Calories needed: ${caloriesNeeded}`)
 
       if (caloriesNeeded <= 0) {
         toast({
           title: "Cannot adjust calories",
-          description: `You've already consumed ${dailyTotal} calories, which exceeds the adjusted target of ${targetWithAdjustment}.`,
+          description: `You've already consumed ${currentTotal} calories, which exceeds the adjusted target of ${targetWithAdjustment}.`,
           variant: "destructive",
         })
         setIsAdjusting(null)
@@ -178,7 +222,7 @@ export default function HistoryPage() {
         body: JSON.stringify({
           date,
           adjustment,
-          currentTotal: dailyTotal,
+          currentTotal,
           targetCalories: targetWithAdjustment,
           caloriesNeeded: caloriesNeeded,
         }),
@@ -232,44 +276,6 @@ export default function HistoryPage() {
 
   // Sort dates in descending order (newest first)
   const sortedDates = Object.keys(entriesByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-
-  // Calculate daily totals
-  const getDailyTotals = () => {
-    const dailyTotals: Record<
-      string,
-      {
-        date: string
-        calories: number
-        protein: number
-        isBelowTarget: boolean
-      }
-    > = {}
-
-    // Group entries by date and sum calories and protein
-    entries.forEach((entry) => {
-      // Use adjustForTimezone to ensure consistent date handling
-      const date = adjustForTimezone(entry.date)
-      const dateString = date.toDateString()
-
-      if (!dailyTotals[dateString]) {
-        dailyTotals[dateString] = {
-          date: entry.date,
-          calories: 0,
-          protein: 0,
-          isBelowTarget: false,
-        }
-      }
-      dailyTotals[dateString].calories += entry.calories
-      dailyTotals[dateString].protein += entry.protein
-    })
-
-    // Check which days are below target
-    Object.keys(dailyTotals).forEach((date) => {
-      dailyTotals[date].isBelowTarget = targets.calorieTarget - dailyTotals[date].calories >= 300
-    })
-
-    return dailyTotals
-  }
 
   const dailyTotals = getDailyTotals()
   const sortedDailyTotals = Object.values(dailyTotals).sort((a, b) => {
