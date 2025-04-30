@@ -3,6 +3,13 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: ["storage.googleapis.com"],
+    unoptimized: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

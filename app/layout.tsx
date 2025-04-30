@@ -67,6 +67,3 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
     </Link>
   )
 }
-
-
-import './globals.css'

@@ -3,7 +3,7 @@ import type { CalorieEntry } from "@/types/calorie-entry"
 import { updateEntryInSheet, deleteEntryFromSheet } from "@/lib/google-sheets"
 
 // Update an entry
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: { id: string } }): Promise<Response> {
   try {
     const id = params.id
     const updatedEntry: CalorieEntry = await request.json()
@@ -22,7 +22,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 // Delete an entry
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: { params: { id: string } }): Promise<Response> {
   try {
     const id = params.id
 
