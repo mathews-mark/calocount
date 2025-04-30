@@ -156,11 +156,15 @@ export default function HistoryPage() {
 
       // Calculate the new calories to add
       const dailyTotal = getDailyTotals()[date]?.calories || 0
-      const targetDifference = targets.calorieTarget - dailyTotal
-      const newCalories = targetDifference + adjustment
+      const targetWithAdjustment = targets.calorieTarget + adjustment
+      const caloriesNeeded = targetWithAdjustment - dailyTotal
 
-      if (newCalories <= 0) {
-        console.error("Adjustment would result in negative or zero calories")
+      if (caloriesNeeded <= 0) {
+        toast({
+          title: "Cannot adjust calories",
+          description: `You've already consumed ${dailyTotal} calories, which exceeds the adjusted target of ${targetWithAdjustment}.`,
+          variant: "destructive",
+        })
         setIsAdjusting(null)
         return
       }
@@ -174,7 +178,9 @@ export default function HistoryPage() {
         body: JSON.stringify({
           date,
           adjustment,
-          targetCalories: newCalories,
+          currentTotal: dailyTotal,
+          targetCalories: targetWithAdjustment,
+          caloriesNeeded: caloriesNeeded,
         }),
       })
 
@@ -183,9 +189,19 @@ export default function HistoryPage() {
       if (data.success) {
         // Refresh entries to show the new adjustment
         await fetchEntries(customStartDate, customEndDate)
+
+        toast({
+          title: "Calories adjusted",
+          description: `Added ${caloriesNeeded} calories to reach the adjusted target of ${targetWithAdjustment}.`,
+        })
       }
     } catch (error) {
       console.error("Error adjusting daily calories:", error)
+      toast({
+        title: "Error",
+        description: "Failed to adjust calories. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsAdjusting(null)
     }
