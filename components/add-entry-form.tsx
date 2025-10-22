@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon, Camera, Plus, Loader2, Calculator, Minus, History, Clock } from "lucide-react"
+import { CalendarIcon, Camera, Plus, Loader2, Minus, History, Clock, Sparkles } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import type { CalorieEntry, MealSuggestion, PortionOption } from "@/types/calorie-entry"
 import { extractPhotoDateTime } from "@/lib/date-utils"
@@ -100,7 +100,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
   const fetchPopularMeals = async () => {
     setIsLoadingMeals(true)
     try {
-      const response = await fetch("/api/popular-meals?limit=10") // Double the count from 5 to 10
+      const response = await fetch("/api/popular-meals?limit=10")
       const data = await response.json()
 
       if (data.success) {
@@ -132,7 +132,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
             const dateB = new Date(`${b.date}T${b.time}`)
             return dateB.getTime() - dateA.getTime()
           })
-          .slice(0, 30) // Double the count from 15 to 30
+          .slice(0, 30)
 
         setRecentEntries(sortedEntries)
       }
@@ -336,7 +336,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
         formData.append("image", photo)
       }
 
-      console.log("Sending request to analyze meal...")
+      console.log("Sending request to analyze meal with natural language parsing...")
 
       const res = await fetch("/api/analyzeMeal", {
         method: "POST",
@@ -359,8 +359,8 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
         setBaseFat(fat || 0)
 
         toast({
-          title: "Calories estimated",
-          description: "The calories and macros have been estimated based on your input.",
+          title: "Meal analyzed!",
+          description: "Calories and macros have been calculated for your meal.",
         })
       } else {
         console.error("AI analysis failed:", result.error)
@@ -505,19 +505,29 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
           {/* Update the form layout to be more mobile-friendly */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
-              <Textarea
-                placeholder="Describe your meal"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="h-24 sm:h-32"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="description" className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Describe your meal in natural language
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder='Try: "2 slices of pizza and a coke" or "chicken breast with rice and broccoli"'
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="h-24 sm:h-32"
+                />
+                <p className="text-xs text-muted-foreground">
+                  💡 Tip: Include quantities and all items in your meal for best results
+                </p>
+              </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleCameraClick}
-                  className="flex-1 flex items-center justify-center"
+                  className="flex-1 flex items-center justify-center bg-transparent"
                 >
                   <Camera className="mr-2 h-4 w-4" />
                   <span className="text-xs sm:text-sm">
@@ -530,12 +540,12 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                   {isEstimating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      <span className="text-xs sm:text-sm">Estimating...</span>
+                      <span className="text-xs sm:text-sm">Analyzing...</span>
                     </>
                   ) : (
                     <>
-                      <Calculator className="mr-2 h-4 w-4" />
-                      <span className="text-xs sm:text-sm">Estimate</span>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      <span className="text-xs sm:text-sm">Analyze</span>
                     </>
                   )}
                 </Button>
@@ -582,7 +592,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
             <div className="flex flex-wrap gap-2 mt-4">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="flex items-center">
+                  <Button variant="outline" className="flex items-center bg-transparent">
                     <History className="mr-2 h-4 w-4" />
                     Popular Meals
                   </Button>
@@ -616,7 +626,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="flex items-center">
+                  <Button variant="outline" className="flex items-center bg-transparent">
                     <Clock className="mr-2 h-4 w-4" />
                     Recent Entries
                   </Button>
@@ -808,7 +818,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                     <Button
                       id="date"
                       variant="outline"
-                      className="w-full justify-start text-left font-normal text-sm sm:text-base overflow-hidden"
+                      className="w-full justify-start text-left font-normal text-sm sm:text-base overflow-hidden bg-transparent"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                       <span className="truncate">{date ? format(date, "MMM dd, yyyy") : <span>Pick a date</span>}</span>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "CalorieApp v0",
   description: "Track your daily calorie intake",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-    generator: 'v0.dev'
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
