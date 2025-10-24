@@ -1,14 +1,14 @@
 "use client"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { MobileLink } from "@/components/mobile-link"
+import Link from "next/link"
 
 export function MainNav() {
   const pathname = usePathname()
 
   return (
     <div className="mr-4 flex">
-      <MobileLink
+      <Link
         href="/"
         className={cn(
           "mr-4 flex items-center space-x-2",
@@ -16,38 +16,48 @@ export function MainNav() {
         )}
       >
         <span>Home</span>
-      </MobileLink>
+      </Link>
       <nav className="flex items-center space-x-6 text-sm font-medium">
-        <MobileLink
-          href="/add"
-          className={cn(pathname === "/add" ? "font-bold" : "font-medium text-muted-foreground hover:text-foreground")}
-        >
-          Add
-        </MobileLink>
-        <MobileLink
+        <Link
           href="/stats"
           className={cn(
             pathname === "/stats" ? "font-bold" : "font-medium text-muted-foreground hover:text-foreground",
           )}
         >
           Stats
-        </MobileLink>
-        <MobileLink
+        </Link>
+        <Link
           href="/history"
           className={cn(
             pathname === "/history" ? "font-bold" : "font-medium text-muted-foreground hover:text-foreground",
           )}
         >
           History
-        </MobileLink>
-        <MobileLink
+        </Link>
+        <Link
           href="/weight"
           className={cn(
             pathname === "/weight" ? "font-bold" : "font-medium text-muted-foreground hover:text-foreground",
           )}
         >
           Weight
-        </MobileLink>
+        </Link>
+        <Link
+          href="/targets"
+          className={cn(
+            pathname === "/targets" ? "font-bold" : "font-medium text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Targets
+        </Link>
+        <Link
+          href="/settings"
+          className={cn(
+            pathname === "/settings" ? "font-bold" : "font-medium text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Settings
+        </Link>
       </nav>
     </div>
   )
