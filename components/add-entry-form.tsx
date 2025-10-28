@@ -84,6 +84,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
   // Voice input state
   const [isListening, setIsListening] = useState(false)
   const [isVoiceSupported, setIsVoiceSupported] = useState(false)
+  const [voiceTranscript, setVoiceTranscript] = useState("")
   const recognitionRef = useRef<any>(null)
 
   // Fetch popular meals and recent entries on component mount
@@ -93,46 +94,71 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
   }, [])
 
   useEffect(() => {
-    // Check if speech recognition is supported
     if (typeof window !== "undefined") {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
 
       if (SpeechRecognition) {
         setIsVoiceSupported(true)
 
-        // Initialize speech recognition
         const recognition = new SpeechRecognition()
-        recognition.continuous = false
-        recognition.interimResults = false
+        recognition.continuous = true
+        recognition.interimResults = true
         recognition.lang = "en-US"
+        recognition.maxAlternatives = 1
 
         recognition.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript
-          setDescription((prev) => (prev ? `${prev} ${transcript}` : transcript))
-          setIsListening(false)
+          console.log("[v0] Speech recognition result received")
+          let finalTranscript = ""
+          let interimTranscript = ""
 
-          toast({
-            title: "Voice captured",
-            description: "Your meal description has been added.",
-          })
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript + " "
+            } else {
+              interimTranscript += transcript
+            }
+          }
+
+          if (finalTranscript) {
+            console.log("[v0] Final transcript:", finalTranscript)
+            setDescription((prev) => (prev ? `${prev} ${finalTranscript}`.trim() : finalTranscript.trim()))
+            setVoiceTranscript("")
+          } else if (interimTranscript) {
+            console.log("[v0] Interim transcript:", interimTranscript)
+            setVoiceTranscript(interimTranscript)
+          }
         }
 
         recognition.onerror = (event: any) => {
-          console.error("Speech recognition error:", event.error)
+          console.error("[v0] Speech recognition error:", event.error)
           setIsListening(false)
+          setVoiceTranscript("")
+
+          let errorMessage = "Failed to capture voice. Please try again."
+          if (event.error === "no-speech") {
+            errorMessage = "No speech detected. Please speak clearly and try again."
+          } else if (event.error === "audio-capture") {
+            errorMessage = "Microphone access denied. Please enable microphone permissions."
+          } else if (event.error === "not-allowed") {
+            errorMessage = "Microphone permission denied. Please allow microphone access in your browser settings."
+          }
 
           toast({
             title: "Voice input error",
-            description:
-              event.error === "no-speech"
-                ? "No speech detected. Please try again."
-                : "Failed to capture voice. Please try again.",
+            description: errorMessage,
             variant: "destructive",
           })
         }
 
         recognition.onend = () => {
+          console.log("[v0] Speech recognition ended")
           setIsListening(false)
+          setVoiceTranscript("")
+        }
+
+        recognition.onstart = () => {
+          console.log("[v0] Speech recognition started")
         }
 
         recognitionRef.current = recognition
@@ -484,19 +510,22 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
     }
 
     if (isListening) {
+      console.log("[v0] Stopping voice recognition")
       recognitionRef.current.stop()
       setIsListening(false)
+      setVoiceTranscript("")
     } else {
       try {
+        console.log("[v0] Starting voice recognition")
         recognitionRef.current.start()
         setIsListening(true)
 
         toast({
           title: "Listening...",
-          description: "Speak your meal description now.",
+          description: "Speak your meal description now. Tap 'Stop Recording' when done.",
         })
       } catch (error) {
-        console.error("Error starting speech recognition:", error)
+        console.error("[v0] Error starting speech recognition:", error)
         toast({
           title: "Voice input error",
           description: "Failed to start voice input. Please try again.",
@@ -582,39 +611,40 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add Food Entry</CardTitle>
-        <CardDescription>Enter the details of your food item</CardDescription>
+    <Card className="shadow-lg border-2">
+      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
+        <CardTitle className="text-2xl">Add Food Entry</CardTitle>
+        <CardDescription className="text-base">Track your meals with AI-powered analysis</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Update the form layout to be more mobile-friendly */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CardContent className="pt-6">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="description" className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    Describe your meal in natural language
+                  <Label htmlFor="description" className="flex items-center gap-2 text-base font-semibold">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Describe your meal
                   </Label>
                   {isVoiceSupported && (
                     <Button
                       type="button"
-                      variant={isListening ? "default" : "outline"}
+                      variant={isListening ? "destructive" : "outline"}
                       size="sm"
                       onClick={toggleVoiceInput}
-                      className={`flex items-center gap-1 ${isListening ? "animate-pulse bg-red-500 hover:bg-red-600" : ""}`}
+                      className={`flex items-center gap-2 transition-all ${
+                        isListening ? "animate-pulse shadow-lg scale-105" : "hover:scale-105"
+                      }`}
                     >
                       {isListening ? (
                         <>
-                          <MicOff className="h-3 w-3" />
-                          <span className="text-xs">Stop</span>
+                          <MicOff className="h-4 w-4" />
+                          <span className="text-xs sm:text-sm font-medium">Stop Recording</span>
                         </>
                       ) : (
                         <>
-                          <Mic className="h-3 w-3" />
-                          <span className="text-xs">Voice</span>
+                          <Mic className="h-4 w-4" />
+                          <span className="text-xs sm:text-sm font-medium">Record</span>
                         </>
                       )}
                     </Button>
@@ -623,41 +653,51 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                 <Textarea
                   id="description"
                   placeholder='Try: "2 slices of pizza and a coke" or "chicken breast with rice and broccoli"'
-                  value={description}
+                  value={description + (voiceTranscript ? ` ${voiceTranscript}` : "")}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="h-24 sm:h-32"
+                  className="h-28 sm:h-36 text-base resize-none border-2 focus:border-primary transition-colors"
                   disabled={isListening}
                 />
-                <p className="text-xs text-muted-foreground">
-                  💡 Tip: {isVoiceSupported ? "Use voice input or type" : "Include"} quantities and all items in your
-                  meal for best results
+                {isListening && voiceTranscript && (
+                  <div className="text-sm text-muted-foreground italic bg-primary/5 p-2 rounded-md">
+                    Listening: {voiceTranscript}
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                  💡 <strong>Tip:</strong> {isVoiceSupported ? "Use voice input or type" : "Include"} quantities and all
+                  items for best results
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleCameraClick}
-                  className="flex-1 flex items-center justify-center bg-transparent"
+                  className="flex-1 flex items-center justify-center border-2 hover:border-primary hover:bg-primary/5 transition-all hover:scale-105 bg-transparent"
                 >
-                  <Camera className="mr-2 h-4 w-4" />
-                  <span className="text-xs sm:text-sm">
+                  <Camera className="mr-2 h-5 w-5" />
+                  <span className="text-sm sm:text-base font-medium">
                     {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
                       ? "Take Photo"
                       : "Upload Photo"}
                   </span>
                 </Button>
-                <Button type="button" onClick={handleEstimateCalories} disabled={isEstimating} className="flex-1">
+                <Button
+                  type="button"
+                  onClick={handleEstimateCalories}
+                  disabled={isEstimating}
+                  className="flex-1 shadow-md hover:shadow-lg transition-all hover:scale-105"
+                >
                   {isEstimating ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      <span className="text-xs sm:text-sm">Analyzing...</span>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <span className="text-sm sm:text-base font-medium">Analyzing...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      <span className="text-xs sm:text-sm">Analyze</span>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      <span className="text-sm sm:text-base font-medium">Analyze</span>
                     </>
                   )}
                 </Button>
@@ -666,17 +706,17 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
 
             {photoPreview && (
               <div className="relative">
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden border-2 shadow-md">
                   <img
                     src={photoPreview || "/placeholder.svg"}
                     alt="Food preview"
-                    className="w-full h-32 sm:h-40 object-cover"
+                    className="w-full h-40 sm:h-48 object-cover"
                   />
                 </Card>
                 <Button
                   variant="destructive"
                   size="sm"
-                  className="absolute top-2 right-2"
+                  className="absolute top-2 right-2 shadow-lg hover:scale-110 transition-transform"
                   onClick={() => {
                     setPhoto(null)
                     setPhotoPreview(null)
@@ -689,28 +729,31 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
             )}
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <div className="flex items-center gap-2">
               <Textarea
                 id="edit-meal-name"
                 value={mealName}
                 onChange={(e) => setMealName(e.target.value)}
                 required
-                className="h-24 sm:h-32"
-                placeholder="Food name"
+                className="h-24 sm:h-28 text-base border-2 focus:border-primary transition-colors resize-none"
+                placeholder="Food name (e.g., Grilled Chicken Salad)"
               />
             </div>
 
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-3 mt-4">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="flex items-center bg-transparent">
-                    <History className="mr-2 h-4 w-4" />
-                    Popular Meals
+                  <Button
+                    variant="outline"
+                    className="flex items-center border-2 hover:border-primary hover:bg-primary/5 transition-all hover:scale-105 bg-transparent"
+                  >
+                    <History className="mr-2 h-5 w-5" />
+                    <span className="font-medium">Popular Meals</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-0" align="start">
-                  <div className="max-h-60 overflow-y-auto p-2 space-y-2">
+                <PopoverContent className="w-80 p-0 shadow-xl border-2" align="start">
+                  <div className="max-h-60 overflow-y-auto p-3 space-y-2">
                     {isLoadingMeals ? (
                       <div className="flex justify-center py-4">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -719,7 +762,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                       popularMeals.map((meal) => (
                         <div
                           key={meal.mealName}
-                          className="p-2 hover:bg-muted rounded-md cursor-pointer"
+                          className="p-2 hover:bg-muted rounded-md cursor-pointer transition-all hover:scale-101"
                           onClick={() => handleSelectPopularMeal(meal)}
                         >
                           <div className="font-medium">{meal.mealName}</div>
@@ -738,13 +781,16 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="flex items-center bg-transparent">
-                    <Clock className="mr-2 h-4 w-4" />
-                    Recent Entries
+                  <Button
+                    variant="outline"
+                    className="flex items-center border-2 hover:border-primary hover:bg-primary/5 transition-all hover:scale-105 bg-transparent"
+                  >
+                    <Clock className="mr-2 h-5 w-5" />
+                    <span className="font-medium">Recent Entries</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-0" align="start">
-                  <div className="max-h-60 overflow-y-auto p-2 space-y-2">
+                <PopoverContent className="w-80 p-0 shadow-xl border-2" align="start">
+                  <div className="max-h-60 overflow-y-auto p-3 space-y-2">
                     {isLoadingMeals ? (
                       <div className="flex justify-center py-4">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -753,7 +799,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                       recentEntries.map((entry) => (
                         <div
                           key={entry.id}
-                          className="p-2 hover:bg-muted rounded-md cursor-pointer"
+                          className="p-2 hover:bg-muted rounded-md cursor-pointer transition-all hover:scale-101"
                           onClick={() => handleSelectRecentEntry(entry)}
                         >
                           <div className="font-medium">{entry.mealName}</div>
@@ -978,10 +1024,14 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
               />
             </div>
 
-            <Button type="submit" disabled={isLoading} className="w-full">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Saving...
                 </>
               ) : (
