@@ -1,79 +1,31 @@
 "use client"
 
 import * as React from "react"
+import * as PopoverPrimitive from "@radix-ui/react-popover"
+
 import { cn } from "@/lib/utils"
 
-interface PopoverContextValue {
-  open: boolean
-  setOpen: (open: boolean) => void
-}
+const Popover = PopoverPrimitive.Root
 
-const PopoverContext = React.createContext<PopoverContextValue | undefined>(undefined)
-
-const Popover = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = React.useState(false)
-
-  return (
-    <PopoverContext.Provider value={{ open, setOpen }}>
-      <div className="relative inline-block">{children}</div>
-    </PopoverContext.Provider>
-  )
-}
-
-const PopoverTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
-  ({ children, onClick, ...props }, ref) => {
-    const context = React.useContext(PopoverContext)
-    if (!context) throw new Error("PopoverTrigger must be used within Popover")
-
-    return (
-      <button
-        ref={ref}
-        onClick={(e) => {
-          context.setOpen(!context.open)
-          onClick?.(e)
-        }}
-        {...props}
-      >
-        {children}
-      </button>
-    )
-  },
-)
-PopoverTrigger.displayName = "PopoverTrigger"
+const PopoverTrigger = PopoverPrimitive.Trigger
 
 const PopoverContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
-    align?: "start" | "center" | "end"
-    sideOffset?: number
-  }
->(({ className, align = "center", sideOffset = 4, children, ...props }, ref) => {
-  const context = React.useContext(PopoverContext)
-  if (!context) throw new Error("PopoverContent must be used within Popover")
-
-  if (!context.open) return null
-
-  return (
-    <>
-      <div className="fixed inset-0 z-40" onClick={() => context.setOpen(false)} />
-      <div
-        ref={ref}
-        className={cn(
-          "absolute z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none",
-          "animate-in fade-in-0 zoom-in-95",
-          align === "start" && "left-0",
-          align === "center" && "left-1/2 -translate-x-1/2",
-          align === "end" && "right-0",
-          className,
-        )}
-        style={{ top: `calc(100% + ${sideOffset}px)` }}
-        {...props}
-      >
-        {children}
-      </div>
-    </>
-  )
-})
-PopoverContent.displayName = "PopoverContent"
+  React.ElementRef<typeof PopoverPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
+>(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
+  <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Content
+      ref={ref}
+      align={align}
+      sideOffset={sideOffset}
+      className={cn(
+        "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        className,
+      )}
+      {...props}
+    />
+  </PopoverPrimitive.Portal>
+))
+PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
 export { Popover, PopoverTrigger, PopoverContent }
