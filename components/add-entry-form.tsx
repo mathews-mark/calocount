@@ -106,8 +106,18 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
         recognition.lang = "en-US"
         recognition.maxAlternatives = 1
 
+        // iOS-specific: Add timeout to prevent hanging
+        let recognitionTimeout: NodeJS.Timeout | null = null
+
         recognition.onresult = (event: any) => {
           console.log("[v0] Speech recognition result received")
+
+          // Clear timeout on successful result
+          if (recognitionTimeout) {
+            clearTimeout(recognitionTimeout)
+            recognitionTimeout = null
+          }
+
           let finalTranscript = ""
           let interimTranscript = ""
 
@@ -132,6 +142,13 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
 
         recognition.onerror = (event: any) => {
           console.error("[v0] Speech recognition error:", event.error)
+
+          // Clear timeout on error
+          if (recognitionTimeout) {
+            clearTimeout(recognitionTimeout)
+            recognitionTimeout = null
+          }
+
           setIsListening(false)
           setVoiceTranscript("")
 
@@ -142,6 +159,9 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
             errorMessage = "Microphone access denied. Please enable microphone permissions."
           } else if (event.error === "not-allowed") {
             errorMessage = "Microphone permission denied. Please allow microphone access in your browser settings."
+          } else if (event.error === "aborted") {
+            // Don't show error for manual stops
+            return
           }
 
           toast({
@@ -153,15 +173,40 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
 
         recognition.onend = () => {
           console.log("[v0] Speech recognition ended")
+
+          // Clear timeout
+          if (recognitionTimeout) {
+            clearTimeout(recognitionTimeout)
+            recognitionTimeout = null
+          }
+
           setIsListening(false)
           setVoiceTranscript("")
         }
 
         recognition.onstart = () => {
           console.log("[v0] Speech recognition started")
+
+          recognitionTimeout = setTimeout(() => {
+            console.log("[v0] Recognition timeout reached, stopping")
+            if (recognitionRef.current && isListening) {
+              recognitionRef.current.stop()
+            }
+          }, 60000) // 60 seconds max
         }
 
         recognitionRef.current = recognition
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop()
+        } catch (e) {
+          // Ignore errors on cleanup
+        }
       }
     }
   }, [])
@@ -511,7 +556,11 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
 
     if (isListening) {
       console.log("[v0] Stopping voice recognition")
-      recognitionRef.current.stop()
+      try {
+        recognitionRef.current.stop()
+      } catch (error) {
+        console.error("[v0] Error stopping recognition:", error)
+      }
       setIsListening(false)
       setVoiceTranscript("")
     } else {
@@ -522,10 +571,12 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
 
         toast({
           title: "Listening...",
-          description: "Speak your meal description now. Tap 'Stop Recording' when done.",
+          description:
+            "Speak your meal description now. Recording will stop automatically after 60 seconds or tap 'Stop Recording'.",
         })
       } catch (error) {
         console.error("[v0] Error starting speech recognition:", error)
+        setIsListening(false)
         toast({
           title: "Voice input error",
           description: "Failed to start voice input. Please try again.",
