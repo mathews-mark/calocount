@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon, Camera, Plus, Loader2, Minus, History, Clock, Sparkles } from "lucide-react"
+import { CalendarIcon, Camera, Plus, Loader2, Minus, History, Clock, Sparkles, Mic, MicOff } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import type { CalorieEntry, MealSuggestion, PortionOption } from "@/types/calorie-entry"
 import { extractPhotoDateTime } from "@/lib/date-utils"
@@ -81,10 +81,63 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isEstimating, setIsEstimating] = useState(false)
 
+  // Voice input state
+  const [isListening, setIsListening] = useState(false)
+  const [isVoiceSupported, setIsVoiceSupported] = useState(false)
+  const recognitionRef = useRef<any>(null)
+
   // Fetch popular meals and recent entries on component mount
   useEffect(() => {
     fetchPopularMeals()
     fetchRecentEntries()
+  }, [])
+
+  useEffect(() => {
+    // Check if speech recognition is supported
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+
+      if (SpeechRecognition) {
+        setIsVoiceSupported(true)
+
+        // Initialize speech recognition
+        const recognition = new SpeechRecognition()
+        recognition.continuous = false
+        recognition.interimResults = false
+        recognition.lang = "en-US"
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript
+          setDescription((prev) => (prev ? `${prev} ${transcript}` : transcript))
+          setIsListening(false)
+
+          toast({
+            title: "Voice captured",
+            description: "Your meal description has been added.",
+          })
+        }
+
+        recognition.onerror = (event: any) => {
+          console.error("Speech recognition error:", event.error)
+          setIsListening(false)
+
+          toast({
+            title: "Voice input error",
+            description:
+              event.error === "no-speech"
+                ? "No speech detected. Please try again."
+                : "Failed to capture voice. Please try again.",
+            variant: "destructive",
+          })
+        }
+
+        recognition.onend = () => {
+          setIsListening(false)
+        }
+
+        recognitionRef.current = recognition
+      }
+    }
   }, [])
 
   // Update calculated values when portion or base values change
@@ -419,6 +472,40 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
     setBaseCalories(newBaseCalories)
   }
 
+  // Voice input toggle function
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      toast({
+        title: "Voice input not supported",
+        description: "Your browser doesn't support voice input. Please use Chrome, Edge, or Safari.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    } else {
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+
+        toast({
+          title: "Listening...",
+          description: "Speak your meal description now.",
+        })
+      } catch (error) {
+        console.error("Error starting speech recognition:", error)
+        toast({
+          title: "Voice input error",
+          description: "Failed to start voice input. Please try again.",
+          variant: "destructive",
+        })
+      }
+    }
+  }
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -506,19 +593,44 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="description" className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  Describe your meal in natural language
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="description" className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    Describe your meal in natural language
+                  </Label>
+                  {isVoiceSupported && (
+                    <Button
+                      type="button"
+                      variant={isListening ? "default" : "outline"}
+                      size="sm"
+                      onClick={toggleVoiceInput}
+                      className={`flex items-center gap-1 ${isListening ? "animate-pulse bg-red-500 hover:bg-red-600" : ""}`}
+                    >
+                      {isListening ? (
+                        <>
+                          <MicOff className="h-3 w-3" />
+                          <span className="text-xs">Stop</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="h-3 w-3" />
+                          <span className="text-xs">Voice</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
                 <Textarea
                   id="description"
                   placeholder='Try: "2 slices of pizza and a coke" or "chicken breast with rice and broccoli"'
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="h-24 sm:h-32"
+                  disabled={isListening}
                 />
                 <p className="text-xs text-muted-foreground">
-                  💡 Tip: Include quantities and all items in your meal for best results
+                  💡 Tip: {isVoiceSupported ? "Use voice input or type" : "Include"} quantities and all items in your
+                  meal for best results
                 </p>
               </div>
 
