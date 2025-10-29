@@ -5,16 +5,39 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { format } from "date-fns"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon, Camera, Plus, Loader2, Minus, History, Clock, Sparkles, Mic, MicOff } from "lucide-react"
-import { toast } from "@/components/ui/use-toast"
+import {
+  Paper,
+  Title,
+  Text,
+  Textarea,
+  Button,
+  NumberInput,
+  Select,
+  Group,
+  Stack,
+  Divider,
+  Badge,
+  ActionIcon,
+  Popover,
+  Card,
+  Image,
+  Loader,
+  rem,
+} from "@mantine/core"
+import { DatePickerInput, TimeInput } from "@mantine/dates"
+import { notifications } from "@mantine/notifications"
+import {
+  IconCamera,
+  IconSparkles,
+  IconPlus,
+  IconMinus,
+  IconHistory,
+  IconClock,
+  IconMicrophone,
+  IconMicrophoneOff,
+  IconCalendar,
+  IconX,
+} from "@tabler/icons-react"
 import type { CalorieEntry, MealSuggestion, PortionOption } from "@/types/calorie-entry"
 import { extractPhotoDateTime } from "@/lib/date-utils"
 
@@ -75,7 +98,6 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
   const [popularMeals, setPopularMeals] = useState<MealSuggestion[]>([])
   const [recentEntries, setRecentEntries] = useState<CalorieEntry[]>([])
   const [isLoadingMeals, setIsLoadingMeals] = useState(false)
-  const [mealSelectorOpen, setMealSelectorOpen] = useState(false)
 
   // Loading state
   const [isLoading, setIsLoading] = useState(false)
@@ -93,6 +115,15 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
     fetchRecentEntries()
   }, [])
 
+  // Update calculated values when portion or base values change
+  useEffect(() => {
+    setCalories(Math.round(baseCalories * portion))
+    setProtein(Number.parseFloat((baseProtein * portion).toFixed(1)))
+    setCarbs(Number.parseFloat((baseCarbs * portion).toFixed(1)))
+    setFat(Number.parseFloat((baseFat * portion).toFixed(1)))
+  }, [portion, baseCalories, baseProtein, baseCarbs, baseFat])
+
+  // Initialize SpeechRecognition and set up its event handlers
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -104,7 +135,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
         recognition.continuous = true
         recognition.interimResults = true
         recognition.lang = "en-US"
-        recognition.maxAlternatives = 1
+        recognition.maxAlternatives = 1 // Keep this for compatibility, though it's often ignored
 
         // iOS-specific: Add timeout to prevent hanging
         let recognitionTimeout: NodeJS.Timeout | null = null
@@ -152,23 +183,23 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
           setIsListening(false)
           setVoiceTranscript("")
 
-          let errorMessage = "Failed to capture voice. Please try again."
-          if (event.error === "no-speech") {
-            errorMessage = "No speech detected. Please speak clearly and try again."
-          } else if (event.error === "audio-capture") {
-            errorMessage = "Microphone access denied. Please enable microphone permissions."
-          } else if (event.error === "not-allowed") {
-            errorMessage = "Microphone permission denied. Please allow microphone access in your browser settings."
-          } else if (event.error === "aborted") {
+          // Use Mantine notifications for errors
+          if (event.error !== "aborted") {
             // Don't show error for manual stops
-            return
+            let errorMessage = "Failed to capture voice. Please try again."
+            if (event.error === "no-speech") {
+              errorMessage = "No speech detected. Please speak clearly and try again."
+            } else if (event.error === "audio-capture") {
+              errorMessage = "Microphone access denied. Please enable microphone permissions."
+            } else if (event.error === "not-allowed") {
+              errorMessage = "Microphone permission denied. Please allow microphone access in your browser settings."
+            }
+            notifications.show({
+              title: "Voice input error",
+              message: errorMessage,
+              color: "red",
+            })
           }
-
-          toast({
-            title: "Voice input error",
-            description: errorMessage,
-            variant: "destructive",
-          })
         }
 
         recognition.onend = () => {
@@ -187,6 +218,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
         recognition.onstart = () => {
           console.log("[v0] Speech recognition started")
 
+          // Set a timeout for the recognition session
           recognitionTimeout = setTimeout(() => {
             console.log("[v0] Recognition timeout reached, stopping")
             if (recognitionRef.current && isListening) {
@@ -199,7 +231,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
       }
     }
 
-    // Cleanup function
+    // Cleanup function to stop recognition when the component unmounts
     return () => {
       if (recognitionRef.current) {
         try {
@@ -210,15 +242,6 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
       }
     }
   }, [])
-
-  // Update calculated values when portion or base values change
-  useEffect(() => {
-    // Dynamic calorie adjustment based on portion
-    setCalories(Math.round(baseCalories * portion))
-    setProtein(Number.parseFloat((baseProtein * portion).toFixed(1)))
-    setCarbs(Number.parseFloat((baseCarbs * portion).toFixed(1)))
-    setFat(Number.parseFloat((baseFat * portion).toFixed(1)))
-  }, [portion, baseCalories, baseProtein, baseCarbs, baseFat])
 
   // Fetch popular meals from the API
   const fetchPopularMeals = async () => {
@@ -249,7 +272,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
       const data = await response.json()
 
       if (data.success) {
-        // Sort by date and time, most recent first, and take the first 5
+        // Sort by date and time, most recent first, and take the first 30
         const sortedEntries = data.entries
           .sort((a: CalorieEntry, b: CalorieEntry) => {
             const dateA = new Date(`${a.date}T${a.time}`)
@@ -267,7 +290,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
     }
   }
 
-  // Then update the handlePhotoUpload function
+  // Handle photo upload and date/time extraction
   const handlePhotoUpload = async (file: File) => {
     setIsLoading(true)
 
@@ -279,14 +302,14 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
       }
       reader.readAsDataURL(file)
 
-      // Extract date and time from the photo
+      // Extract date and time from the photo metadata
       const { date: photoDate, time: photoTime } = await extractPhotoDateTime(file)
 
       // Set the date and time from the photo
       setDate(new Date(photoDate))
       setTime(photoTime)
 
-      // Upload the file
+      // Upload the file to the server
       const formData = new FormData()
       formData.append("file", file)
 
@@ -299,104 +322,61 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
 
       if (data.success) {
         setPhotoUrl(data.photoUrl)
-
-        // Log the extracted date and time
-        console.log(`Photo date and time extracted: ${photoDate} ${photoTime}`)
+        console.log(`Photo uploaded successfully. URL: ${data.photoUrl}`)
       }
     } catch (error) {
       console.error("Error uploading photo:", error)
+      notifications.show({
+        title: "Photo upload error",
+        message: "Failed to upload photo.",
+        color: "red",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Find the handleCameraClick function and replace it with this version that keeps the original functionality
-  // but uses the more specific file types to avoid Google Drive options
+  // Handle camera button click, differentiating between mobile and desktop
   const handleCameraClick = () => {
-    try {
-      console.log("Camera button clicked")
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
 
-      // Check if we're on a mobile device
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      console.log("Device detected as:", isMobile ? "Mobile" : "Desktop")
+    if (isMobile) {
+      // Dynamically create an input element for file selection
+      const input = document.createElement("input")
+      input.type = "file"
+      // Specify exact image types to avoid Google Drive option on iOS
+      input.accept = "image/jpeg,image/png"
 
-      if (isMobile) {
-        console.log("Using mobile camera capture method")
-
-        // For iOS devices, we need a special approach
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-
-        if (isIOS) {
-          console.log("iOS device detected, using iOS-specific method")
-
-          // iOS specific approach
-          const input = document.createElement("input")
-          input.type = "file"
-          // Specify exact image types to avoid Google Drive option
-          input.accept = "image/jpeg,image/png"
-
-          // For iOS, we need to add it to the DOM temporarily
-          input.style.position = "absolute"
-          input.style.top = "-1000px"
-          document.body.appendChild(input)
-
-          input.onchange = (e) => {
-            console.log("File input change event triggered")
-            const target = e.target as HTMLInputElement
-            if (target.files && target.files[0]) {
-              console.log("File selected:", target.files[0].name)
-              setPhoto(target.files[0])
-              handlePhotoUpload(target.files[0])
-            } else {
-              console.log("No file selected")
-            }
-
-            // Clean up
-            document.body.removeChild(input)
-          }
-
-          console.log("Clicking the input element")
-          input.click()
-        } else {
-          console.log("Android or other mobile device, using standard capture method")
-
-          // Standard mobile approach with capture attribute
-          const input = document.createElement("input")
-          input.type = "file"
-          // Specify exact image types to avoid Google Drive option
-          input.accept = "image/jpeg,image/png"
-          input.capture = "environment" // Use the back camera
-
-          input.onchange = (e) => {
-            console.log("File input change event triggered")
-            const target = e.target as HTMLInputElement
-            if (target.files && target.files[0]) {
-              console.log("File selected:", target.files[0].name)
-              setPhoto(target.files[0])
-              handlePhotoUpload(target.files[0])
-            } else {
-              console.log("No file selected")
-            }
-          }
-
-          console.log("Clicking the input element")
-          input.click()
-        }
-      } else if (fileInputRef.current) {
-        console.log("Desktop device, using file input ref")
-        fileInputRef.current.click()
+      // For iOS, the input needs to be temporarily added to the DOM to trigger the camera
+      if (isIOS) {
+        input.style.position = "absolute"
+        input.style.top = "-1000px"
+        document.body.appendChild(input)
       }
-    } catch (error) {
-      console.error("Error in camera click handler:", error)
-      toast({
-        title: "Camera Error",
-        description: error instanceof Error ? error.message : "Failed to access camera",
-        variant: "destructive",
-      })
+
+      // Handle file selection
+      input.onchange = (e) => {
+        const target = e.target as HTMLInputElement
+        if (target.files && target.files[0]) {
+          setPhoto(target.files[0])
+          handlePhotoUpload(target.files[0])
+        }
+        // Clean up the input element for iOS
+        if (isIOS && input.parentNode) {
+          input.parentNode.removeChild(input)
+        }
+      }
+
+      // Trigger the file input click
+      input.click()
+    } else if (fileInputRef.current) {
+      // For desktop, trigger the hidden file input
+      fileInputRef.current.click()
     }
   }
 
-  // Handle file input change
+  // Handle file input change for desktop uploads
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -405,7 +385,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
     }
   }
 
-  // Handle popular meal selection
+  // Handle selection of a popular meal
   const handleSelectPopularMeal = (meal: MealSuggestion) => {
     setMealName(meal.mealName)
     setBaseCalories(meal.calories)
@@ -413,37 +393,39 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
     setBaseCarbs(meal.carbs)
     setBaseFat(meal.fat)
     setPortion(1) // Reset portion to 1 when selecting a meal
-    setMealSelectorOpen(false)
-
-    toast({
+    // Use Mantine notifications
+    notifications.show({
       title: "Meal selected",
-      description: `Selected ${meal.mealName} from popular meals.`,
+      message: `Selected ${meal.mealName} from popular meals.`,
+      color: "green",
     })
   }
 
-  // Handle recent entry selection
+  // Handle selection of a recent entry
   const handleSelectRecentEntry = (entry: CalorieEntry) => {
     setMealName(entry.mealName)
+    // Calculate base values from the selected entry
     setBaseCalories(Math.round(entry.calories / entry.portion))
     setBaseProtein(Number((entry.protein / entry.portion).toFixed(1)))
     setBaseCarbs(Number((entry.carbs / entry.portion).toFixed(1)))
     setBaseFat(Number((entry.fat / entry.portion).toFixed(1)))
     setPortion(1) // Reset portion to 1 when selecting an entry
-    setMealSelectorOpen(false)
-
-    toast({
+    // Use Mantine notifications
+    notifications.show({
       title: "Entry selected",
-      description: `Selected ${entry.mealName} from recent entries.`,
+      message: `Selected ${entry.mealName} from recent entries.`,
+      color: "green",
     })
   }
 
-  // Handle estimate calories
+  // Handle AI-powered meal analysis
   const handleEstimateCalories = async () => {
+    // Require either description or photo for analysis
     if (!description && !photo) {
-      toast({
+      notifications.show({
         title: "Input required",
-        description: "Please enter a description or upload an image of your food.",
-        variant: "destructive",
+        message: "Please enter a description or upload an image of your food.",
+        color: "red",
       })
       return
     }
@@ -482,37 +464,25 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
         setBaseCarbs(carbs || 0)
         setBaseFat(fat || 0)
 
-        toast({
+        notifications.show({
           title: "Meal analyzed!",
-          description: "Calories and macros have been calculated for your meal.",
+          message: "Calories and macros have been calculated for your meal.",
+          color: "green",
         })
       } else {
-        console.error("AI analysis failed:", result.error)
-        toast({
-          title: "Estimation failed",
-          description: result.error || "Unknown error",
-          variant: "destructive",
-        })
-
-        // Set default values based on description
-        if (description) {
-          setMealName(description)
-          // Set some reasonable default values
-          setBaseCalories(250)
-          setBaseProtein(15)
-          setBaseCarbs(25)
-          setBaseFat(10)
-        }
+        // Throw an error to be caught by the catch block
+        throw new Error(result.error || "Unknown AI analysis error")
       }
     } catch (error) {
       console.error("Error analyzing meal:", error)
-      toast({
+      // Use Mantine notifications for errors
+      notifications.show({
         title: "Estimation failed",
-        description: "Failed to estimate calories. Using default values instead.",
-        variant: "destructive",
+        message: "Failed to estimate calories. Using default values instead.",
+        color: "red",
       })
 
-      // Set default values
+      // Set default values if description is available
       if (description) {
         setMealName(description)
         setBaseCalories(250)
@@ -520,6 +490,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
         setBaseCarbs(25)
         setBaseFat(10)
       } else {
+        // Fallback if no description either
         setMealName("Unknown food")
         setBaseCalories(250)
         setBaseProtein(15)
@@ -531,25 +502,14 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
     }
   }
 
-  // Increment calories by 25
-  const incrementCalories = () => {
-    const newBaseCalories = baseCalories + 25
-    setBaseCalories(newBaseCalories)
-  }
-
-  // Decrement calories by 25
-  const decrementCalories = () => {
-    const newBaseCalories = Math.max(0, baseCalories - 25)
-    setBaseCalories(newBaseCalories)
-  }
-
-  // Voice input toggle function
+  // Toggle voice input listening state
   const toggleVoiceInput = () => {
+    // Check if SpeechRecognition is supported by the browser
     if (!recognitionRef.current) {
-      toast({
+      notifications.show({
         title: "Voice input not supported",
-        description: "Your browser doesn't support voice input. Please use Chrome, Edge, or Safari.",
-        variant: "destructive",
+        message: "Your browser doesn't support voice input. Please use Chrome, Edge, or Safari.",
+        color: "red",
       })
       return
     }
@@ -557,7 +517,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
     if (isListening) {
       console.log("[v0] Stopping voice recognition")
       try {
-        recognitionRef.current.stop()
+        recognitionRef.current.stop() // Stop the recognition
       } catch (error) {
         console.error("[v0] Error stopping recognition:", error)
       }
@@ -566,65 +526,67 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
     } else {
       try {
         console.log("[v0] Starting voice recognition")
-        recognitionRef.current.start()
+        recognitionRef.current.start() // Start the recognition
         setIsListening(true)
 
-        toast({
+        // Inform the user they are being listened to
+        notifications.show({
           title: "Listening...",
-          description:
-            "Speak your meal description now. Recording will stop automatically after 60 seconds or tap 'Stop Recording'.",
+          message:
+            "Speak your meal description now. Recording will stop automatically after 60 seconds or when you tap 'Stop Recording'.",
+          color: "blue",
         })
       } catch (error) {
         console.error("[v0] Error starting speech recognition:", error)
         setIsListening(false)
-        toast({
+        notifications.show({
           title: "Voice input error",
-          description: "Failed to start voice input. Please try again.",
-          variant: "destructive",
+          message: "Failed to start voice input. Please try again.",
+          color: "red",
         })
       }
     }
   }
 
-  // Handle form submission
+  // Handle form submission to save the calorie entry
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
+    setIsLoading(true) // Set loading state to true
 
     try {
-      // Create the entry object
+      // Construct the CalorieEntry object
       const entry: CalorieEntry = {
-        id: uuidv4(),
-        date: format(date, "yyyy-MM-dd"),
-        time,
+        id: uuidv4(), // Generate a unique ID
+        date: format(date, "yyyy-MM-dd"), // Format the date
+        time, // Use the current time
         mealName,
         calories,
         protein,
         carbs,
         fat,
         portion,
-        photoUrl: photoUrl || "",
-        notes,
+        photoUrl: photoUrl || "", // Include photo URL if available
+        notes, // Include any additional notes
       }
 
-      // Save the entry to the API
+      // Send the entry to the API
       const response = await fetch("/api/entries", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json", // Specify content type
         },
-        body: JSON.stringify(entry),
+        body: JSON.stringify(entry), // Convert entry to JSON string
       })
 
       const data = await response.json()
 
       if (data.success) {
-        // Call the onEntryAdded callback if provided
+        // Call the onEntryAdded callback if it exists
         if (onEntryAdded) {
           onEntryAdded(entry)
         }
 
-        // Reset form
+        // Reset form fields to their initial states
         setMealName("")
         setDescription("")
         setBaseCalories(0)
@@ -636,465 +598,396 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
         setPhoto(null)
         setPhotoPreview(null)
         setPhotoUrl(null)
-        setDate(new Date())
-        setTime(format(new Date(), "HH:mm"))
+        setDate(new Date()) // Reset date to current date
+        setTime(format(new Date(), "HH:mm")) // Reset time to current time
 
-        // Refresh popular meals and recent entries
+        // Refresh popular meals and recent entries lists
         fetchPopularMeals()
         fetchRecentEntries()
 
-        // Show success message
-        toast({
+        // Show success notification using Mantine
+        notifications.show({
           title: "Entry saved",
-          description: "Your food entry has been saved successfully.",
+          message: "Your food entry has been saved successfully.",
+          color: "green",
         })
+      } else {
+        // If API returns success: false, throw an error
+        throw new Error(data.error || "Failed to save entry from API")
       }
     } catch (error) {
       console.error("Error saving entry:", error)
-      toast({
+      // Show error notification using Mantine
+      notifications.show({
         title: "Error",
-        description: "Failed to save your food entry. Please try again.",
-        variant: "destructive",
+        message: "Failed to save your food entry. Please try again.",
+        color: "red",
       })
     } finally {
-      setIsLoading(false)
+      setIsLoading(false) // Ensure loading state is reset
     }
   }
 
   return (
-    <Card className="shadow-lg border-2">
-      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
-        <CardTitle className="text-2xl">Add Food Entry</CardTitle>
-        <CardDescription className="text-base">Track your meals with AI-powered analysis</CardDescription>
-      </CardHeader>
-      <CardContent className="pt-6">
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="description" className="flex items-center gap-2 text-base font-semibold">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    Describe your meal
-                  </Label>
-                  {isVoiceSupported && (
-                    <Button
-                      type="button"
-                      variant={isListening ? "destructive" : "outline"}
-                      size="sm"
-                      onClick={toggleVoiceInput}
-                      className={`flex items-center gap-2 transition-all ${
-                        isListening ? "animate-pulse shadow-lg scale-105" : "hover:scale-105"
-                      }`}
-                    >
-                      {isListening ? (
-                        <>
-                          <MicOff className="h-4 w-4" />
-                          <span className="text-xs sm:text-sm font-medium">Stop Recording</span>
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="h-4 w-4" />
-                          <span className="text-xs sm:text-sm font-medium">Record</span>
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </div>
-                <Textarea
-                  id="description"
-                  placeholder='Try: "2 slices of pizza and a coke" or "chicken breast with rice and broccoli"'
-                  value={description + (voiceTranscript ? ` ${voiceTranscript}` : "")}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="h-28 sm:h-36 text-base resize-none border-2 focus:border-primary transition-colors"
-                  disabled={isListening}
-                />
-                {isListening && voiceTranscript && (
-                  <div className="text-sm text-muted-foreground italic bg-primary/5 p-2 rounded-md">
-                    Listening: {voiceTranscript}
-                  </div>
-                )}
-                <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
-                  💡 <strong>Tip:</strong> {isVoiceSupported ? "Use voice input or type" : "Include"} quantities and all
-                  items for best results
-                </p>
-              </div>
+    <Paper shadow="sm" p="xl" radius="sm" withBorder style={{ borderWidth: 1, borderColor: "#e5e5e5" }}>
+      <Stack gap="lg">
+        <div>
+          <Title order={2} mb="xs" style={{ fontFamily: "Georgia, serif", fontWeight: 700 }}>
+            Add Food Entry
+          </Title>
+          <Text c="dimmed" size="sm">
+            Track your meals with AI-powered analysis
+          </Text>
+        </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCameraClick}
-                  className="flex-1 flex items-center justify-center border-2 hover:border-primary hover:bg-primary/5 transition-all hover:scale-105 bg-transparent"
-                >
-                  <Camera className="mr-2 h-5 w-5" />
-                  <span className="text-sm sm:text-base font-medium">
-                    {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-                      ? "Take Photo"
-                      : "Upload Photo"}
-                  </span>
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleEstimateCalories}
-                  disabled={isEstimating}
-                  className="flex-1 shadow-md hover:shadow-lg transition-all hover:scale-105"
-                >
-                  {isEstimating ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      <span className="text-sm sm:text-base font-medium">Analyzing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-5 w-5" />
-                      <span className="text-sm sm:text-base font-medium">Analyze</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
+        <Divider />
 
-            {photoPreview && (
-              <div className="relative">
-                <Card className="overflow-hidden border-2 shadow-md">
-                  <img
-                    src={photoPreview || "/placeholder.svg"}
-                    alt="Food preview"
-                    className="w-full h-40 sm:h-48 object-cover"
-                  />
-                </Card>
+        <Stack gap="md">
+          <div>
+            <Group justify="space-between" mb="xs">
+              <Group gap="xs">
+                <IconSparkles size={20} />
+                <Text fw={600} size="sm">
+                  Describe your meal
+                </Text>
+              </Group>
+              {isVoiceSupported && (
                 <Button
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2 shadow-lg hover:scale-110 transition-transform"
-                  onClick={() => {
-                    setPhoto(null)
-                    setPhotoPreview(null)
-                    setPhotoUrl(null)
-                  }}
+                  variant={isListening ? "filled" : "light"}
+                  color={isListening ? "red" : "dark"}
+                  size="xs"
+                  leftSection={isListening ? <IconMicrophoneOff size={16} /> : <IconMicrophone size={16} />}
+                  onClick={toggleVoiceInput}
+                  style={{ animation: isListening ? "pulse 1.5s infinite" : "none" }}
                 >
-                  Remove
+                  {isListening ? "Stop Recording" : "Record"}
                 </Button>
-              </div>
+              )}
+            </Group>
+            <Textarea
+              placeholder='Try: "2 slices of pizza and a coke" or "chicken breast with rice and broccoli"'
+              value={description + (voiceTranscript ? ` ${voiceTranscript}` : "")}
+              onChange={(e) => setDescription(e.currentTarget.value)}
+              minRows={4}
+              disabled={isListening}
+              styles={{
+                input: {
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: rem(15),
+                  lineHeight: 1.6,
+                },
+              }}
+            />
+            {isListening && voiceTranscript && (
+              <Text size="sm" c="dimmed" mt="xs" fs="italic">
+                Listening: {voiceTranscript}
+              </Text>
             )}
+            <Text size="sm" c="dimmed" mt="xs" p="xs" style={{ backgroundColor: "#f5f5f5", borderRadius: 4 }}>
+              💡 <strong>Tip:</strong> Include quantities and all items for best results
+            </Text>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-            <div className="flex items-center gap-2">
-              <Textarea
-                id="edit-meal-name"
-                value={mealName}
-                onChange={(e) => setMealName(e.target.value)}
-                required
-                className="h-24 sm:h-28 text-base border-2 focus:border-primary transition-colors resize-none"
-                placeholder="Food name (e.g., Grilled Chicken Salad)"
-              />
-            </div>
+          <Group grow>
+            <Button
+              variant="default"
+              leftSection={<IconCamera size={18} />}
+              onClick={handleCameraClick}
+              styles={{ root: { borderColor: "#e5e5e5" } }}
+            >
+              {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                ? "Take Photo"
+                : "Upload Photo"}
+            </Button>
+            <Button
+              variant="filled"
+              color="dark"
+              leftSection={isEstimating ? <Loader size="xs" color="white" /> : <IconSparkles size={18} />}
+              onClick={handleEstimateCalories}
+              disabled={isEstimating}
+            >
+              {isEstimating ? "Analyzing..." : "Analyze"}
+            </Button>
+          </Group>
 
-            <div className="flex flex-wrap gap-3 mt-4">
-              <Popover>
-                <PopoverTrigger asChild>
+          {photoPreview && (
+            <Card padding="xs" radius="sm" withBorder style={{ position: "relative" }}>
+              <Image src={photoPreview || "/placeholder.svg"} alt="Food preview" height={200} fit="cover" radius="sm" />
+              <ActionIcon
+                variant="filled"
+                color="red"
+                size="sm"
+                radius="xl"
+                style={{ position: "absolute", top: 8, right: 8 }}
+                onClick={() => {
+                  setPhoto(null)
+                  setPhotoPreview(null)
+                  setPhotoUrl(null)
+                }}
+              >
+                <IconX size={16} />
+              </ActionIcon>
+            </Card>
+          )}
+        </Stack>
+
+        <Divider />
+
+        <form onSubmit={handleSubmit}>
+          <Stack gap="md">
+            <Textarea
+              label="Food name"
+              placeholder="e.g., Grilled Chicken Salad"
+              value={mealName}
+              onChange={(e) => setMealName(e.currentTarget.value)}
+              required
+              minRows={2}
+              styles={{
+                label: { fontWeight: 600, marginBottom: 8 },
+                input: { fontSize: rem(15) },
+              }}
+            />
+
+            <Group grow>
+              <Popover width={320} position="bottom-start" shadow="md">
+                <Popover.Target>
                   <Button
-                    variant="outline"
-                    className="flex items-center border-2 hover:border-primary hover:bg-primary/5 transition-all hover:scale-105 bg-transparent"
+                    variant="default"
+                    leftSection={<IconHistory size={18} />}
+                    styles={{ root: { borderColor: "#e5e5e5" } }}
                   >
-                    <History className="mr-2 h-5 w-5" />
-                    <span className="font-medium">Popular Meals</span>
+                    Popular Meals
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 p-0 shadow-xl border-2" align="start">
-                  <div className="max-h-60 overflow-y-auto p-3 space-y-2">
+                </Popover.Target>
+                <Popover.Dropdown p="xs">
+                  <Stack gap="xs" mah={240} style={{ overflowY: "auto" }}>
                     {isLoadingMeals ? (
-                      <div className="flex justify-center py-4">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                      </div>
+                      <Group justify="center" p="md">
+                        <Loader size="sm" />
+                      </Group>
                     ) : popularMeals.length > 0 ? (
                       popularMeals.map((meal) => (
-                        <div
+                        <Card
                           key={meal.mealName}
-                          className="p-2 hover:bg-muted rounded-md cursor-pointer transition-all hover:scale-101"
+                          padding="xs"
+                          radius="sm"
+                          withBorder
+                          style={{ cursor: "pointer" }}
                           onClick={() => handleSelectPopularMeal(meal)}
                         >
-                          <div className="font-medium">{meal.mealName}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <Text size="sm" fw={600}>
+                            {meal.mealName}
+                          </Text>
+                          <Text size="xs" c="dimmed">
                             {meal.calories} cal | P: {meal.protein}g | C: {meal.carbs}g | F: {meal.fat}g
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">Frequency: {meal.frequency}x</div>
-                        </div>
+                          </Text>
+                          <Badge size="xs" variant="light" mt={4}>
+                            {meal.frequency}x
+                          </Badge>
+                        </Card>
                       ))
                     ) : (
-                      <div className="text-center py-2 text-muted-foreground">No popular meals found</div>
+                      <Text size="sm" c="dimmed" ta="center">
+                        No popular meals found
+                      </Text>
                     )}
-                  </div>
-                </PopoverContent>
+                  </Stack>
+                </Popover.Dropdown>
               </Popover>
 
-              <Popover>
-                <PopoverTrigger asChild>
+              <Popover width={320} position="bottom-start" shadow="md">
+                <Popover.Target>
                   <Button
-                    variant="outline"
-                    className="flex items-center border-2 hover:border-primary hover:bg-primary/5 transition-all hover:scale-105 bg-transparent"
+                    variant="default"
+                    leftSection={<IconClock size={18} />}
+                    styles={{ root: { borderColor: "#e5e5e5" } }}
                   >
-                    <Clock className="mr-2 h-5 w-5" />
-                    <span className="font-medium">Recent Entries</span>
+                    Recent Entries
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 p-0 shadow-xl border-2" align="start">
-                  <div className="max-h-60 overflow-y-auto p-3 space-y-2">
+                </Popover.Target>
+                <Popover.Dropdown p="xs">
+                  <Stack gap="xs" mah={240} style={{ overflowY: "auto" }}>
                     {isLoadingMeals ? (
-                      <div className="flex justify-center py-4">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                      </div>
+                      <Group justify="center" p="md">
+                        <Loader size="sm" />
+                      </Group>
                     ) : recentEntries.length > 0 ? (
                       recentEntries.map((entry) => (
-                        <div
+                        <Card
                           key={entry.id}
-                          className="p-2 hover:bg-muted rounded-md cursor-pointer transition-all hover:scale-101"
+                          padding="xs"
+                          radius="sm"
+                          withBorder
+                          style={{ cursor: "pointer" }}
                           onClick={() => handleSelectRecentEntry(entry)}
                         >
-                          <div className="font-medium">{entry.mealName}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <Text size="sm" fw={600}>
+                            {entry.mealName}
+                          </Text>
+                          <Text size="xs" c="dimmed">
                             {entry.calories} cal | P: {entry.protein}g | C: {entry.carbs}g | F: {entry.fat}g
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
+                          </Text>
+                          <Text size="xs" c="dimmed" mt={4}>
                             {new Date(entry.date).toLocaleDateString()} at {entry.time}
-                          </div>
-                        </div>
+                          </Text>
+                        </Card>
                       ))
                     ) : (
-                      <div className="text-center py-2 text-muted-foreground">No recent entries found</div>
+                      <Text size="sm" c="dimmed" ta="center">
+                        No recent entries found
+                      </Text>
                     )}
-                  </div>
-                </PopoverContent>
+                  </Stack>
+                </Popover.Dropdown>
               </Popover>
-            </div>
+            </Group>
 
-            {/* Moved portion selector above calories */}
-            <div className="space-y-2">
-              <Label htmlFor="portion">Portion</Label>
-              <Select
-                value={portion.toString()}
-                onValueChange={(value) => setPortion(Number.parseFloat(value) as PortionOption)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select portion" />
-                </SelectTrigger>
-                <SelectContent>
-                  {portionOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value.toString()}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select
+              label="Portion"
+              value={portion.toString()}
+              onChange={(value) => setPortion(Number.parseFloat(value!) as PortionOption)}
+              data={portionOptions.map((opt) => ({ value: opt.value.toString(), label: opt.label }))}
+              styles={{ label: { fontWeight: 600, marginBottom: 8 } }}
+            />
 
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="calories">Total Calories ({portion}x)</Label>
-                <div className="text-sm text-muted-foreground">Base: {baseCalories} cal</div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={decrementCalories}
+            <div>
+              <Group justify="space-between" mb={8}>
+                <Text size="sm" fw={600}>
+                  Total Calories ({portion}x)
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Base: {baseCalories} cal
+                </Text>
+              </Group>
+              <Group>
+                <ActionIcon
+                  variant="default"
+                  onClick={() => setBaseCalories(Math.max(0, baseCalories - 25))}
                   disabled={baseCalories <= 0}
                 >
-                  <Minus className="h-4 w-4" />
-                </Button>
-
-                <Input id="calories" type="number" value={calories || ""} readOnly className="flex-1 bg-muted" />
-
-                <Button type="button" variant="outline" size="icon" onClick={incrementCalories}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+                  <IconMinus size={16} />
+                </ActionIcon>
+                <NumberInput value={calories} readOnly flex={1} styles={{ input: { backgroundColor: "#f5f5f5" } }} />
+                <ActionIcon variant="default" onClick={() => setBaseCalories(baseCalories + 25)}>
+                  <IconPlus size={16} />
+                </ActionIcon>
+              </Group>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="protein">Protein ({portion}x)</Label>
-                <div className="text-sm text-muted-foreground">Base: {baseProtein}g</div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    const newBaseProtein = Math.max(0, baseProtein - 1)
-                    setBaseProtein(newBaseProtein)
-                  }}
+            <div>
+              <Group justify="space-between" mb={8}>
+                <Text size="sm" fw={600}>
+                  Protein ({portion}x)
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Base: {baseProtein}g
+                </Text>
+              </Group>
+              <Group>
+                <ActionIcon
+                  variant="default"
+                  onClick={() => setBaseProtein(Math.max(0, baseProtein - 1))}
                   disabled={baseProtein <= 0}
                 >
-                  <Minus className="h-4 w-4" />
-                </Button>
-
-                <Input id="protein" type="number" value={protein || ""} readOnly className="flex-1 bg-muted" />
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    const newBaseProtein = baseProtein + 1
-                    setBaseProtein(newBaseProtein)
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+                  <IconMinus size={16} />
+                </ActionIcon>
+                <NumberInput value={protein} readOnly flex={1} styles={{ input: { backgroundColor: "#f5f5f5" } }} />
+                <ActionIcon variant="default" onClick={() => setBaseProtein(baseProtein + 1)}>
+                  <IconPlus size={16} />
+                </ActionIcon>
+              </Group>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="carbs">Carbs ({portion}x)</Label>
-                <div className="text-sm text-muted-foreground">Base: {baseCarbs}g</div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    const newBaseCarbs = Math.max(0, baseCarbs - 1)
-                    setBaseCarbs(newBaseCarbs)
-                  }}
+            <div>
+              <Group justify="space-between" mb={8}>
+                <Text size="sm" fw={600}>
+                  Carbs ({portion}x)
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Base: {baseCarbs}g
+                </Text>
+              </Group>
+              <Group>
+                <ActionIcon
+                  variant="default"
+                  onClick={() => setBaseCarbs(Math.max(0, baseCarbs - 1))}
                   disabled={baseCarbs <= 0}
                 >
-                  <Minus className="h-4 w-4" />
-                </Button>
-
-                <Input id="carbs" type="number" value={carbs || ""} readOnly className="flex-1 bg-muted" />
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    const newBaseCarbs = baseCarbs + 1
-                    setBaseCarbs(newBaseCarbs)
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+                  <IconMinus size={16} />
+                </ActionIcon>
+                <NumberInput value={carbs} readOnly flex={1} styles={{ input: { backgroundColor: "#f5f5f5" } }} />
+                <ActionIcon variant="default" onClick={() => setBaseCarbs(baseCarbs + 1)}>
+                  <IconPlus size={16} />
+                </ActionIcon>
+              </Group>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="fat">Fat ({portion}x)</Label>
-                <div className="text-sm text-muted-foreground">Base: {baseFat}g</div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    const newBaseFat = Math.max(0, baseFat - 1)
-                    setBaseFat(newBaseFat)
-                  }}
+            <div>
+              <Group justify="space-between" mb={8}>
+                <Text size="sm" fw={600}>
+                  Fat ({portion}x)
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Base: {baseFat}g
+                </Text>
+              </Group>
+              <Group>
+                <ActionIcon
+                  variant="default"
+                  onClick={() => setBaseFat(Math.max(0, baseFat - 1))}
                   disabled={baseFat <= 0}
                 >
-                  <Minus className="h-4 w-4" />
-                </Button>
-
-                <Input id="fat" type="number" value={fat || ""} readOnly className="flex-1 bg-muted" />
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    const newBaseFat = baseFat + 1
-                    setBaseFat(newBaseFat)
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+                  <IconMinus size={16} />
+                </ActionIcon>
+                <NumberInput value={fat} readOnly flex={1} styles={{ input: { backgroundColor: "#f5f5f5" } }} />
+                <ActionIcon variant="default" onClick={() => setBaseFat(baseFat + 1)}>
+                  <IconPlus size={16} />
+                </ActionIcon>
+              </Group>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="date"
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal text-sm sm:text-base overflow-hidden bg-transparent"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{date ? format(date, "MMM dd, yyyy") : <span>Pick a date</span>}</span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={(date) => date && setDate(date)}
-                      initialFocus
-                      disabled={(date) => date > new Date()}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="time">Time</Label>
-                <div className="flex items-center">
-                  <Input
-                    id="time"
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    required
-                    className="flex-1"
-                  />
-                  <div className="ml-2 text-muted-foreground hidden sm:flex items-center">
-                    <Clock className="h-4 w-4 mr-1" />
-                    <span className="text-xs">Current time by default</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add any additional notes here"
-                rows={3}
+            <Group grow>
+              <DatePickerInput
+                label="Date"
+                value={date}
+                onChange={(value) => value && setDate(value)}
+                leftSection={<IconCalendar size={18} />}
+                maxDate={new Date()}
+                styles={{ label: { fontWeight: 600, marginBottom: 8 } }}
               />
-            </div>
+              <TimeInput
+                label="Time"
+                value={time}
+                onChange={(e) => setTime(e.currentTarget.value)}
+                leftSection={<IconClock size={18} />}
+                styles={{ label: { fontWeight: 600, marginBottom: 8 } }}
+              />
+            </Group>
+
+            <Textarea
+              label="Notes (Optional)"
+              placeholder="Add any additional notes here"
+              value={notes}
+              onChange={(e) => setNotes(e.currentTarget.value)}
+              minRows={3}
+              styles={{ label: { fontWeight: 600, marginBottom: 8 } }}
+            />
 
             <Button
               type="submit"
+              size="lg"
+              color="dark"
+              fullWidth
               disabled={isLoading}
-              className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              leftSection={isLoading ? <Loader size="xs" color="white" /> : null}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Food Entry"
-              )}
+              {isLoading ? "Saving..." : "Save Food Entry"}
             </Button>
-          </form>
-        </div>
-      </CardContent>
+          </Stack>
+        </form>
+      </Stack>
 
-      {/* Hidden file input for desktop browsers */}
-      <input type="file" ref={fileInputRef} accept="image/*" onChange={handleFileChange} className="hidden" />
-    </Card>
+      <input type="file" ref={fileInputRef} accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
+    </Paper>
   )
 }

@@ -1,11 +1,12 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { MantineProvider, ColorSchemeScript } from "@mantine/core"
+import { Notifications } from "@mantine/notifications"
+import "@mantine/core/styles.css"
+import "@mantine/dates/styles.css"
+import "@mantine/notifications/styles.css"
 import "./globals.css"
-import { Toaster } from "@/components/ui/toaster"
 import { MainNav } from "@/components/main-nav"
-
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Calorie Tracker - AI-Powered Nutrition Tracking",
@@ -20,23 +21,53 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-          <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
-            <div className="container flex h-16 items-center">
-              <MainNav />
-            </div>
-          </header>
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body>
+        <MantineProvider
+          theme={{
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamilyMonospace: "Monaco, Courier, monospace",
+            headings: {
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontWeight: "700",
+            },
+            colors: {
+              dark: [
+                "#f5f5f5",
+                "#e7e7e7",
+                "#cdcdcd",
+                "#b2b2b2",
+                "#9a9a9a",
+                "#8b8b8b",
+                "#848484",
+                "#717171",
+                "#656565",
+                "#121212",
+              ],
+            },
+            primaryColor: "dark",
+            defaultRadius: "sm",
+          }}
+        >
+          <Notifications position="top-right" />
+          <div className="min-h-screen bg-white">
+            <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
+              <div className="container mx-auto px-4">
+                <MainNav />
+              </div>
+            </header>
 
-          <main className="container py-6">{children}</main>
+            <main className="container mx-auto px-4 py-8">{children}</main>
 
-          <footer className="border-t bg-background/95 backdrop-blur mt-12">
-            <div className="container py-6 text-center text-sm text-muted-foreground">
-              <p>© 2025 Calorie Tracker. Track smarter, live healthier.</p>
-            </div>
-          </footer>
-        </div>
-        <Toaster />
+            <footer className="border-t border-gray-200 bg-white mt-16">
+              <div className="container mx-auto px-4 py-8 text-center text-sm text-gray-600">
+                <p>© 2025 Calorie Tracker. Track smarter, live healthier.</p>
+              </div>
+            </footer>
+          </div>
+        </MantineProvider>
       </body>
     </html>
   )
