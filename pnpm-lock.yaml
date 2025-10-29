@@ -10,19 +10,19 @@ importers:
     dependencies:
       '@mantine/core':
         specifier: latest
-        version: 8.3.6(@mantine/hooks@7.15.1(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
+        version: 8.3.6(@mantine/hooks@8.3.6(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
       '@mantine/dates':
         specifier: latest
-        version: 8.3.6(@mantine/core@8.3.6(@mantine/hooks@7.15.1(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(@mantine/hooks@7.15.1(react@18.0.0))(dayjs@1.11.13)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
+        version: 8.3.6(@mantine/core@8.3.6(@mantine/hooks@8.3.6(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(@mantine/hooks@8.3.6(react@18.0.0))(dayjs@1.11.13)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
       '@mantine/form':
-        specifier: ^7.15.1
-        version: 7.15.1(react@18.0.0)
+        specifier: ^8.3.6
+        version: 8.3.6(react@18.0.0)
       '@mantine/hooks':
-        specifier: ^7.15.1
-        version: 7.15.1(react@18.0.0)
+        specifier: ^8.3.6
+        version: 8.3.6(react@18.0.0)
       '@mantine/notifications':
         specifier: latest
-        version: 8.3.6(@mantine/core@8.3.6(@mantine/hooks@7.15.1(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(@mantine/hooks@7.15.1(react@18.0.0))(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
+        version: 8.3.6(@mantine/core@8.3.6(@mantine/hooks@8.3.6(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(@mantine/hooks@8.3.6(react@18.0.0))(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
       '@radix-ui/react-dialog':
         specifier: latest
         version: 1.1.15(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
@@ -107,9 +107,6 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17)
-      tw-animate-css:
-        specifier: 1.4.0
-        version: 1.4.0
       uuid:
         specifier: latest
         version: 13.0.0
@@ -243,13 +240,13 @@ packages:
       react: ^18.x || ^19.x
       react-dom: ^18.x || ^19.x
 
-  '@mantine/form@7.15.1':
-    resolution: {integrity: sha512-DA2syNlPsG1f+UtnbEG+pf4Pc/DoZUgcdvZn3LsCRxJZYNuwz8qQ16oL/wQ6UIk3klGlJI/RDzRJ9rvn6E28YQ==}
+  '@mantine/form@8.3.6':
+    resolution: {integrity: sha512-hIu0KdP1e1Vu7KUQ+cIDpor9UE9vO7iXR3dOMu6GPF3MlHFbwnCjakW9nxSCjP1PRTMwA3m43s4GIt22XfK9tg==}
     peerDependencies:
       react: ^18.x || ^19.x
 
-  '@mantine/hooks@7.15.1':
-    resolution: {integrity: sha512-jrpjA5JhVSgUi0expfZpvNplMgvwdvrCIcKiDjQ16p/KiWngvTVfmJMtBOVxQ6hWrn500nLmZIDEcTmV9Dvb7g==}
+  '@mantine/hooks@8.3.6':
+    resolution: {integrity: sha512-liHfaWXHAkLjJy+Bkr29UsCwAoDQ/a64WrM67lksx8F0qqyjR5RQH8zVlhuOjdpQnwtlUkE/YiTvbJiPcoI0bw==}
     peerDependencies:
       react: ^18.x || ^19.x
 
@@ -2578,9 +2575,6 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
-  tw-animate-css@1.4.0:
-    resolution: {integrity: sha512-7bziOlRqH0hJx80h/3mbicLW7o8qLsH5+RaLR2t+OHM3D0JlWGODQKQ4cxbK7WlvmUxpcj6Kgu6EKqjrGFe3QQ==}
-
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -2861,10 +2855,10 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@mantine/core@8.3.6(@mantine/hooks@7.15.1(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)':
+  '@mantine/core@8.3.6(@mantine/hooks@8.3.6(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)':
     dependencies:
       '@floating-ui/react': 0.27.16(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@mantine/hooks': 7.15.1(react@18.0.0)
+      '@mantine/hooks': 8.3.6(react@18.0.0)
       clsx: 2.1.1
       react: 18.0.0
       react-dom: 18.0.0(react@18.0.0)
@@ -2875,29 +2869,29 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@mantine/dates@8.3.6(@mantine/core@8.3.6(@mantine/hooks@7.15.1(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(@mantine/hooks@7.15.1(react@18.0.0))(dayjs@1.11.13)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)':
+  '@mantine/dates@8.3.6(@mantine/core@8.3.6(@mantine/hooks@8.3.6(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(@mantine/hooks@8.3.6(react@18.0.0))(dayjs@1.11.13)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)':
     dependencies:
-      '@mantine/core': 8.3.6(@mantine/hooks@7.15.1(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@mantine/hooks': 7.15.1(react@18.0.0)
+      '@mantine/core': 8.3.6(@mantine/hooks@8.3.6(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
+      '@mantine/hooks': 8.3.6(react@18.0.0)
       clsx: 2.1.1
       dayjs: 1.11.13
       react: 18.0.0
       react-dom: 18.0.0(react@18.0.0)
 
-  '@mantine/form@7.15.1(react@18.0.0)':
+  '@mantine/form@8.3.6(react@18.0.0)':
     dependencies:
       fast-deep-equal: 3.1.3
       klona: 2.0.6
       react: 18.0.0
 
-  '@mantine/hooks@7.15.1(react@18.0.0)':
+  '@mantine/hooks@8.3.6(react@18.0.0)':
     dependencies:
       react: 18.0.0
 
-  '@mantine/notifications@8.3.6(@mantine/core@8.3.6(@mantine/hooks@7.15.1(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(@mantine/hooks@7.15.1(react@18.0.0))(react-dom@18.0.0(react@18.0.0))(react@18.0.0)':
+  '@mantine/notifications@8.3.6(@mantine/core@8.3.6(@mantine/hooks@8.3.6(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(@mantine/hooks@8.3.6(react@18.0.0))(react-dom@18.0.0(react@18.0.0))(react@18.0.0)':
     dependencies:
-      '@mantine/core': 8.3.6(@mantine/hooks@7.15.1(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@mantine/hooks': 7.15.1(react@18.0.0)
+      '@mantine/core': 8.3.6(@mantine/hooks@8.3.6(react@18.0.0))(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
+      '@mantine/hooks': 8.3.6(react@18.0.0)
       '@mantine/store': 8.3.6(react@18.0.0)
       react: 18.0.0
       react-dom: 18.0.0(react@18.0.0)
@@ -5422,8 +5416,6 @@ snapshots:
       strip-bom: 3.0.0
 
   tslib@2.8.1: {}
-
-  tw-animate-css@1.4.0: {}
 
   type-check@0.4.0:
     dependencies:
