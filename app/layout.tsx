@@ -27,11 +27,11 @@ export default function RootLayout({
       <body>
         <MantineProvider
           theme={{
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             fontFamilyMonospace: "Monaco, Courier, monospace",
             headings: {
-              fontFamily: 'Georgia, "Times New Roman", serif',
-              fontWeight: "700",
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+              fontWeight: "600",
             },
             colors: {
               dark: [
