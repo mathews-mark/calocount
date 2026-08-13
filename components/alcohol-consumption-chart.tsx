@@ -145,12 +145,12 @@ export function AlcoholConsumptionChart({ entries }: AlcoholConsumptionChartProp
     <Card className="p-4">
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
           <XAxis dataKey="date" />
           <YAxis allowDecimals={false} />
           <Tooltip formatter={(value) => [`${value} drinks`, "Alcohol"]} labelFormatter={(label) => `Date: ${label}`} />
           <Legend />
-          <Bar dataKey="quantity" name="Alcoholic Drinks" fill="#8E44AD" />
+          <Bar dataKey="quantity" name="Alcoholic Drinks" fill="hsl(var(--chart-4))" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
       {chartData.length === 0 && (

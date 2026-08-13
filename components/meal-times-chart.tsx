@@ -16,10 +16,10 @@ export function MealTimesChart() {
 
       // Define meal times
       const mealTimes = {
-        "Breakfast (5am-10am)": { count: 0, color: "#FF8042" },
-        "Lunch (10am-3pm)": { count: 0, color: "#FFBB28" },
-        "Dinner (3pm-8pm)": { count: 0, color: "#0088FE" },
-        "Late Night (8pm-5am)": { count: 0, color: "#00C49F" },
+        "Breakfast (5am-10am)": { count: 0, color: "hsl(var(--chart-3))" },
+        "Lunch (10am-3pm)": { count: 0, color: "hsl(var(--chart-1))" },
+        "Dinner (3pm-8pm)": { count: 0, color: "hsl(var(--chart-2))" },
+        "Late Night (8pm-5am)": { count: 0, color: "hsl(var(--chart-4))" },
       }
 
       // Count entries by meal time
@@ -68,7 +68,7 @@ export function MealTimesChart() {
               cy="50%"
               labelLine={false}
               outerRadius={80}
-              fill="#8884d8"
+              fill="hsl(var(--chart-1))"
               dataKey="value"
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
             >

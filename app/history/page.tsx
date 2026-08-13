@@ -5,12 +5,14 @@ import { format, parseISO } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Loader2, Pencil, Trash2, AlertTriangle, CalendarIcon, ArrowRight } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Loader2, Pencil, Trash2, AlertTriangle, CalendarIcon, ArrowRight, Search, X } from "lucide-react"
 import type { CalorieEntry } from "@/types/calorie-entry"
 import { EditEntryForm } from "@/components/edit-entry-form"
 import { toast } from "@/components/ui/use-toast"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
+import { PageHeader } from "@/components/page-header"
 
 export default function HistoryPage() {
   const [entries, setEntries] = useState<CalorieEntry[]>([])
@@ -20,6 +22,7 @@ export default function HistoryPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("entries")
   const [isAdjusting, setIsAdjusting] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   // Date range states
   const [customStartDate, setCustomStartDate] = useState<Date>(new Date())
@@ -258,8 +261,27 @@ export default function HistoryPage() {
     return date
   }
 
+  // Free-text search across meal name and notes
+  const query = searchQuery.trim().toLowerCase()
+  const visibleEntries = query
+    ? entries.filter(
+        (entry) =>
+          entry.mealName?.toLowerCase().includes(query) || entry.notes?.toLowerCase().includes(query),
+      )
+    : entries
+
+  const searchTotals = visibleEntries.reduce(
+    (acc, e) => ({
+      calories: acc.calories + (Number(e.calories) || 0),
+      protein: acc.protein + (Number(e.protein) || 0),
+      carbs: acc.carbs + (Number(e.carbs) || 0),
+      fat: acc.fat + (Number(e.fat) || 0),
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 },
+  )
+
   // Group entries by date
-  const entriesByDate = entries.reduce(
+  const entriesByDate = visibleEntries.reduce(
     (acc, entry) => {
       // Use adjustForTimezone to ensure consistent date handling
       const date = adjustForTimezone(entry.date)
@@ -296,7 +318,7 @@ export default function HistoryPage() {
 
   return (
     <div className="container py-6 space-y-6">
-      <h1 className="text-3xl font-bold">History</h1>
+      <PageHeader title="History" description="Every entry you've logged, by date range" />
 
       {/* Date Range Selector */}
       <Card>
@@ -360,10 +382,57 @@ export default function HistoryPage() {
               )}
             </div>
 
-            <div className="text-sm text-muted-foreground">{entries.length} entries found</div>
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <div className="relative w-full sm:w-64">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search meals and notes"
+                  className="pl-9 pr-8"
+                  aria-label="Search entries"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Clear search"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <div className="whitespace-nowrap text-sm text-muted-foreground">
+                {visibleEntries.length}
+                {query ? ` of ${entries.length}` : ""} {visibleEntries.length === 1 ? "entry" : "entries"}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {query && visibleEntries.length > 0 && (
+        <Card>
+          <CardContent className="flex flex-wrap items-baseline gap-x-8 gap-y-2 pt-6">
+            <div>
+              <div className="stat-number text-2xl text-emphasis">{Math.round(searchTotals.calories).toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">total calories matching &ldquo;{searchQuery}&rdquo;</div>
+            </div>
+            <div>
+              <div className="stat-number text-xl text-foreground">
+                {Math.round(searchTotals.calories / visibleEntries.length).toLocaleString()}
+              </div>
+              <div className="text-xs text-muted-foreground">average per entry</div>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              P {Math.round(searchTotals.protein)}g &middot; C {Math.round(searchTotals.carbs)}g &middot; F{" "}
+              {Math.round(searchTotals.fat)}g
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="entries" onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-2 w-full">
@@ -375,7 +444,11 @@ export default function HistoryPage() {
           {sortedDates.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">No entries found for this time period</p>
+                <p className="text-center text-muted-foreground">
+                  {query
+                    ? `No entries match "${searchQuery}" in this date range`
+                    : "No entries found for this time period"}
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -430,7 +503,11 @@ export default function HistoryPage() {
           {sortedDailyTotals.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">No entries found for this time period</p>
+                <p className="text-center text-muted-foreground">
+                  {query
+                    ? `No entries match "${searchQuery}" in this date range`
+                    : "No entries found for this time period"}
+                </p>
               </CardContent>
             </Card>
           ) : (

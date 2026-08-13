@@ -58,7 +58,7 @@ function groupDataByDate(data: TargetEntry[], type: "calories" | "protein") {
 
 const TargetHistoryChart: React.FC<TargetHistoryChartProps> = ({ data, type }) => {
   const chartData = groupDataByDate(data, type)
-  const color = type === "calories" ? "#8884d8" : "#82ca9d"
+  const color = type === "calories" ? "hsl(var(--chart-1))" : "hsl(var(--chart-2))"
   const label = type === "calories" ? "Calorie Target" : "Protein Target (g)"
 
   return (
@@ -72,7 +72,7 @@ const TargetHistoryChart: React.FC<TargetHistoryChartProps> = ({ data, type }) =
           bottom: 5,
         }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
+        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
         <XAxis dataKey="date" />
         <YAxis />
         <Tooltip
@@ -80,7 +80,7 @@ const TargetHistoryChart: React.FC<TargetHistoryChartProps> = ({ data, type }) =
           labelFormatter={(label) => `Date: ${label}`}
         />
         <Legend />
-        <Line type="monotone" dataKey="value" name={label} stroke={color} activeDot={{ r: 8 }} />
+        <Line type="monotone" dataKey="value" name={label} stroke={color} strokeWidth={2} activeDot={{ r: 6 }} />
       </LineChart>
     </ResponsiveContainer>
   )

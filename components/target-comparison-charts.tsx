@@ -96,13 +96,13 @@ export function TargetComparisonCharts({ entries, dateFormat }: TargetComparison
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={getCalorieComparisonData()} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="actual" name="Actual Calories" fill="hsl(var(--primary))" />
-                <Bar dataKey="target" name="Target Calories" fill="hsl(var(--secondary))" />
+                <Bar dataKey="actual" name="Actual Calories" fill="hsl(var(--chart-1))" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="target" name="Target Calories" fill="hsl(var(--muted-foreground))" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -117,13 +117,13 @@ export function TargetComparisonCharts({ entries, dateFormat }: TargetComparison
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={getProteinComparisonData()} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="actual" name="Actual Protein (g)" fill="hsl(var(--primary))" />
-                <Bar dataKey="target" name="Target Protein (g)" fill="hsl(var(--secondary))" />
+                <Bar dataKey="actual" name="Actual Protein (g)" fill="hsl(var(--chart-1))" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="target" name="Target Protein (g)" fill="hsl(var(--muted-foreground))" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

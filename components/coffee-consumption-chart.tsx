@@ -89,12 +89,12 @@ export function CoffeeConsumptionChart({ entries }: CoffeeConsumptionChartProps)
     <Card className="p-4">
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
           <XAxis dataKey="date" />
           <YAxis allowDecimals={false} />
           <Tooltip formatter={(value) => [`${value} cups`, "Coffee"]} labelFormatter={(label) => `Date: ${label}`} />
           <Legend />
-          <Bar dataKey="quantity" name="Coffee Cups" fill="#8B4513" />
+          <Bar dataKey="quantity" name="Coffee Cups" fill="hsl(var(--chart-3))" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
       {chartData.length === 0 && (

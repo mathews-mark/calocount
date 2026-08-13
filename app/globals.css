@@ -5,104 +5,112 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* NYT-inspired color palette with sophisticated neutrals */
-  --background: 0 0% 100%;
-  --foreground: 0 0% 9%;
+  /* Verdant palette — warm off-white surfaces, leafy green accent */
+  --background: 50 30% 96%;
+  --foreground: 24 10% 10%;
 
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 9%;
+  --card-foreground: 24 10% 10%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 9%;
+  --popover-foreground: 24 10% 10%;
 
-  /* Elegant dark gray as primary instead of blue */
-  --primary: 0 0% 9%;
-  --primary-foreground: 0 0% 98%;
+  /* Leafy green as primary */
+  --primary: 142 76% 36%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 0 0% 9%;
+  /* Deep forest green for emphasis / big numbers */
+  --emphasis: 144 61% 20%;
 
-  --muted: 0 0% 96%;
-  --muted-foreground: 0 0% 45%;
+  --secondary: 48 25% 94%;
+  --secondary-foreground: 24 10% 10%;
 
-  --accent: 0 0% 96%;
-  --accent-foreground: 0 0% 9%;
+  --muted: 48 25% 94%;
+  --muted-foreground: 25 6% 45%;
 
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
+  --accent: 130 30% 96%;
+  --accent-foreground: 144 61% 20%;
 
-  --success: 142.1 76.2% 36.3%;
-  --success-foreground: 0 0% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 0 0% 90%;
-  --input: 0 0% 90%;
-  --ring: 0 0% 9%;
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
 
-  --radius: 0.25rem;
+  --border: 44 19% 88%;
+  --input: 44 19% 88%;
+  --ring: 142 76% 36%;
 
-  --chart-1: 0 0% 9%;
-  --chart-2: 142.1 76.2% 36.3%;
-  --chart-3: 0 84.2% 60.2%;
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 0.75rem;
+
+  /* Macro identity colors — fixed, validated for colorblind separation */
+  --chart-1: 142 76% 36%; /* calories / green */
+  --chart-2: 221 83% 53%; /* protein / blue */
+  --chart-3: 38 92% 50%; /* carbs / amber */
+  --chart-4: 333 71% 51%; /* fat / pink */
+  --chart-5: 175 84% 32%; /* teal, spare */
+
+  --sidebar: 50 30% 96%;
+  --sidebar-foreground: 24 10% 10%;
+  --sidebar-primary: 142 76% 36%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 130 30% 96%;
+  --sidebar-accent-foreground: 144 61% 20%;
+  --sidebar-border: 44 19% 88%;
+  --sidebar-ring: 142 76% 36%;
 }
 
 .dark {
-  --background: 0 0% 9%;
-  --foreground: 0 0% 98%;
+  --background: 140 8% 7%;
+  --foreground: 60 5% 96%;
 
-  --card: 0 0% 9%;
-  --card-foreground: 0 0% 98%;
+  --card: 140 7% 10%;
+  --card-foreground: 60 5% 96%;
 
-  --popover: 0 0% 9%;
-  --popover-foreground: 0 0% 98%;
+  --popover: 140 7% 10%;
+  --popover-foreground: 60 5% 96%;
 
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
+  --primary: 142 69% 45%;
+  --primary-foreground: 144 61% 10%;
 
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 98%;
+  --emphasis: 142 60% 72%;
 
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 65%;
+  --secondary: 140 6% 16%;
+  --secondary-foreground: 60 5% 96%;
 
-  --accent: 0 0% 15%;
-  --accent-foreground: 0 0% 98%;
+  --muted: 140 6% 16%;
+  --muted-foreground: 60 4% 65%;
 
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
+  --accent: 140 10% 15%;
+  --accent-foreground: 142 60% 72%;
 
-  --success: 142.1 70.6% 45.3%;
-  --success-foreground: 0 0% 9%;
+  --destructive: 0 63% 45%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 0 0% 15%;
-  --input: 0 0% 15%;
-  --ring: 0 0% 98%;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --success: 142 69% 45%;
+  --success-foreground: 144 61% 10%;
+
+  --border: 140 6% 18%;
+  --input: 140 6% 18%;
+  --ring: 142 69% 45%;
+
+  --chart-1: 142 69% 45%;
+  --chart-2: 217 91% 60%;
+  --chart-3: 38 92% 55%;
+  --chart-4: 333 78% 62%;
+  --chart-5: 175 70% 45%;
+
+  --sidebar: 140 7% 10%;
+  --sidebar-foreground: 60 5% 96%;
+  --sidebar-primary: 142 69% 45%;
+  --sidebar-primary-foreground: 144 61% 10%;
+  --sidebar-accent: 140 10% 15%;
+  --sidebar-accent-foreground: 142 60% 72%;
+  --sidebar-border: 140 6% 18%;
+  --sidebar-ring: 142 69% 45%;
 }
 
 @theme inline {
-  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -147,11 +155,11 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Changed to sans-serif font */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 16px;
     line-height: 1.6;
     letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
   }
 
   h1,
@@ -160,15 +168,13 @@
   h4,
   h5,
   h6 {
-    /* Changed headings to sans-serif */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-weight: 600;
+    font-weight: 650;
     letter-spacing: -0.02em;
     line-height: 1.2;
   }
 }
 
-/* Refined animations with subtle easing */
 @layer utilities {
   .transition-all {
     transition-property: all;
@@ -187,6 +193,53 @@
   .animate-scale-in {
     animation: scaleIn 0.2s ease-out;
   }
+
+  /* Big numbers — tight, confident */
+  .stat-number {
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Brand wordmark */
+.gradient-text {
+  color: hsl(var(--emphasis));
+  letter-spacing: -0.02em;
+}
+
+/* Keep side-by-side button labels legible on narrow screens */
+@media (max-width: 480px) {
+  .mantine-Button-root {
+    --button-padding-x: 10px;
+    font-size: 13px;
+  }
+  .mantine-Button-section[data-position="left"] {
+    margin-right: 6px;
+  }
+}
+
+/* Recharts: recessive axes, readable ticks */
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: hsl(var(--border));
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: hsl(var(--muted-foreground));
+  font-size: 12px;
+}
+
+.recharts-legend-item-text {
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 12.5px;
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  border-radius: 10px !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 4px 14px rgba(20, 50, 30, 0.08);
 }
 
 @keyframes fadeIn {
@@ -220,7 +273,23 @@
   }
 }
 
-/* Removed gradient backgrounds for cleaner NYT aesthetic */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Calorie ring sweep on load */
+@keyframes ringSweep {
+  from {
+    stroke-dashoffset: var(--ring-circumference);
+  }
+}
+
 .editorial-divider {
   border-top: 1px solid hsl(var(--border));
   margin: 2rem 0;

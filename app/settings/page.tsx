@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 // Import the MobileLink component
 import { MobileLink } from "@/components/mobile-link"
+import { PageHeader } from "@/components/page-header"
 
 export default function SettingsPage() {
   const [spreadsheetId, setSpreadsheetId] = useState("")
@@ -139,7 +140,7 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <h1 className="text-3xl font-bold">Settings</h1>
+      <PageHeader title="Settings" description="Connect your spreadsheet and manage the app" />
 
       <Tabs defaultValue="google-sheets">
         <TabsList>

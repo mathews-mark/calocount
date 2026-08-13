@@ -62,12 +62,12 @@ const WeightHistoryChart: React.FC<WeightHistoryChartProps> = ({ data }) => {
           bottom: 5,
         }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
+        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
         <XAxis dataKey="date" />
         <YAxis />
         <Tooltip formatter={(value) => [`${value} lbs`, "Weight"]} labelFormatter={(label) => `Date: ${label}`} />
         <Legend />
-        <Line type="monotone" dataKey="weight" stroke="#8884d8" activeDot={{ r: 8 }} />
+        <Line type="monotone" dataKey="weight" stroke="hsl(var(--chart-2))" strokeWidth={2} activeDot={{ r: 8 }} />
       </LineChart>
     </ResponsiveContainer>
   )

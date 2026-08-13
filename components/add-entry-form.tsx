@@ -629,10 +629,20 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
   }
 
   return (
-    <Paper shadow="sm" p="xl" radius="sm" withBorder style={{ borderWidth: 1, borderColor: "#e5e5e5" }}>
+    <Paper
+      p="xl"
+      radius="lg"
+      withBorder
+      style={{
+        borderWidth: 1,
+        borderColor: "hsl(var(--border))",
+        backgroundColor: "hsl(var(--card))",
+        boxShadow: "0 1px 3px rgba(20, 50, 30, 0.05)",
+      }}
+    >
       <Stack gap="lg">
         <div>
-          <Title order={2} mb="xs" style={{ fontFamily: "Georgia, serif", fontWeight: 700 }}>
+          <Title order={2} mb="xs" style={{ fontSize: "1.35rem" }}>
             Add Food Entry
           </Title>
           <Text c="dimmed" size="sm">
@@ -654,7 +664,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
               {isVoiceSupported && (
                 <Button
                   variant={isListening ? "filled" : "light"}
-                  color={isListening ? "red" : "dark"}
+                  color={isListening ? "red" : "verdant"}
                   size="xs"
                   leftSection={isListening ? <IconMicrophoneOff size={16} /> : <IconMicrophone size={16} />}
                   onClick={toggleVoiceInput}
@@ -683,7 +693,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                 Listening: {voiceTranscript}
               </Text>
             )}
-            <Text size="sm" c="dimmed" mt="xs" p="xs" style={{ backgroundColor: "#f5f5f5", borderRadius: 4 }}>
+            <Text size="sm" c="dimmed" mt="xs" p="xs" style={{ backgroundColor: "hsl(var(--accent))", borderRadius: 10, color: "hsl(var(--muted-foreground))" }}>
               💡 <strong>Tip:</strong> Include quantities and all items for best results
             </Text>
           </div>
@@ -693,7 +703,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
               variant="default"
               leftSection={<IconCamera size={18} />}
               onClick={handleCameraClick}
-              styles={{ root: { borderColor: "#e5e5e5" } }}
+              styles={{ root: { borderColor: "hsl(var(--border))" } }}
             >
               {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
                 ? "Take Photo"
@@ -701,7 +711,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
             </Button>
             <Button
               variant="filled"
-              color="dark"
+              color="verdant"
               leftSection={isEstimating ? <Loader size="xs" color="white" /> : <IconSparkles size={18} />}
               onClick={handleEstimateCalories}
               disabled={isEstimating}
@@ -754,7 +764,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                   <Button
                     variant="default"
                     leftSection={<IconHistory size={18} />}
-                    styles={{ root: { borderColor: "#e5e5e5" } }}
+                    styles={{ root: { borderColor: "hsl(var(--border))" } }}
                   >
                     Popular Meals
                   </Button>
@@ -800,7 +810,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                   <Button
                     variant="default"
                     leftSection={<IconClock size={18} />}
-                    styles={{ root: { borderColor: "#e5e5e5" } }}
+                    styles={{ root: { borderColor: "hsl(var(--border))" } }}
                   >
                     Recent Entries
                   </Button>
@@ -867,7 +877,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                 >
                   <IconMinus size={16} />
                 </ActionIcon>
-                <NumberInput value={calories} readOnly flex={1} styles={{ input: { backgroundColor: "#f5f5f5" } }} />
+                <NumberInput value={calories} readOnly flex={1} styles={{ input: { backgroundColor: "hsl(var(--secondary))", fontWeight: 600 } }} />
                 <ActionIcon variant="default" onClick={() => setBaseCalories(baseCalories + 25)}>
                   <IconPlus size={16} />
                 </ActionIcon>
@@ -891,7 +901,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                 >
                   <IconMinus size={16} />
                 </ActionIcon>
-                <NumberInput value={protein} readOnly flex={1} styles={{ input: { backgroundColor: "#f5f5f5" } }} />
+                <NumberInput value={protein} readOnly flex={1} styles={{ input: { backgroundColor: "hsl(var(--secondary))", fontWeight: 600 } }} />
                 <ActionIcon variant="default" onClick={() => setBaseProtein(baseProtein + 1)}>
                   <IconPlus size={16} />
                 </ActionIcon>
@@ -915,7 +925,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                 >
                   <IconMinus size={16} />
                 </ActionIcon>
-                <NumberInput value={carbs} readOnly flex={1} styles={{ input: { backgroundColor: "#f5f5f5" } }} />
+                <NumberInput value={carbs} readOnly flex={1} styles={{ input: { backgroundColor: "hsl(var(--secondary))", fontWeight: 600 } }} />
                 <ActionIcon variant="default" onClick={() => setBaseCarbs(baseCarbs + 1)}>
                   <IconPlus size={16} />
                 </ActionIcon>
@@ -939,7 +949,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
                 >
                   <IconMinus size={16} />
                 </ActionIcon>
-                <NumberInput value={fat} readOnly flex={1} styles={{ input: { backgroundColor: "#f5f5f5" } }} />
+                <NumberInput value={fat} readOnly flex={1} styles={{ input: { backgroundColor: "hsl(var(--secondary))", fontWeight: 600 } }} />
                 <ActionIcon variant="default" onClick={() => setBaseFat(baseFat + 1)}>
                   <IconPlus size={16} />
                 </ActionIcon>
@@ -976,7 +986,7 @@ export function AddEntryForm({ onEntryAdded }: AddEntryFormProps) {
             <Button
               type="submit"
               size="lg"
-              color="dark"
+              color="verdant"
               fullWidth
               disabled={isLoading}
               leftSection={isLoading ? <Loader size="xs" color="white" /> : null}
