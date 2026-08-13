@@ -36,6 +36,7 @@
     "@radix-ui/react-tooltip": "latest",
     "@supabase/supabase-js": "latest",
     "@tabler/icons-react": "latest",
+    "ai": "^7.0.64",
     "buffer": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
